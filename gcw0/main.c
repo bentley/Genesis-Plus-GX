@@ -318,11 +318,13 @@ static int sdl_control_update(SDLKey keystate)
 {
     switch (keystate)
     {
+#ifndef GCWZERO
       case SDLK_TAB:
       {
         system_reset();
         break;
       }
+#endif
 
       case SDLK_F1:
       {
@@ -683,11 +685,9 @@ int sdl_input_update(void)
       if(keystate[SDLK_LALT])  input.pad[joynum] |= INPUT_B;//b
       if(keystate[SDLK_LCTRL])  input.pad[joynum] |= INPUT_C;//a
       if(keystate[SDLK_RETURN])  input.pad[joynum] |= INPUT_START;
-      if(keystate[SDLK_z])  input.pad[joynum] |= INPUT_X;
-      if(keystate[SDLK_x])  input.pad[joynum] |= INPUT_Y;
-      if(keystate[SDLK_c])  input.pad[joynum] |= INPUT_Z;
-      if(keystate[SDLK_v])  input.pad[joynum] |= INPUT_MODE;
-
+      if(keystate[SDLK_TAB])  input.pad[joynum] |= INPUT_X;//l
+      if(keystate[SDLK_SPACE])  input.pad[joynum] |= INPUT_Y; //y
+      if(keystate[SDLK_BACKSPACE])  input.pad[joynum] |= INPUT_Z; //y
 #else
       if(keystate[SDLK_a])  input.pad[joynum] |= INPUT_A;
       if(keystate[SDLK_s])  input.pad[joynum] |= INPUT_B;
