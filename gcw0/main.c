@@ -372,7 +372,9 @@ static int sdl_control_update(SDLKey keystate)
 
       case SDLK_F7:
       {
-        FILE *f = fopen("game.gp0","rb");
+		char save_state_file[256];
+		sprintf(save_state_file,"MD-%04X.gp0", rominfo.realchecksum);
+        FILE *f = fopen(save_state_file,"rb");
         if (f)
         {
           uint8 buf[STATE_SIZE];
@@ -385,7 +387,9 @@ static int sdl_control_update(SDLKey keystate)
 
       case SDLK_F8:
       {
-        FILE *f = fopen("game.gp0","wb");
+		char save_state_file[256];
+		sprintf(save_state_file,"MD-%04X.gp0", rominfo.realchecksum);
+        FILE *f = fopen(save_state_file,"wb");
         if (f)
         {
           uint8 buf[STATE_SIZE];
@@ -859,7 +863,9 @@ int main (int argc, char **argv)
   if (sram.on)
   {
     /* load SRAM */
-    fp = fopen("./game.srm", "rb");
+    char save_file[256];
+	sprintf(save_file,"MD-%04X.srm", rominfo.realchecksum);
+    fp = fopen(save_file, "rb");
     if (fp!=NULL)
     {
       fread(sram.sram,0x10000,1, fp);
@@ -946,7 +952,9 @@ int main (int argc, char **argv)
   if (sram.on)
   {
     /* save SRAM */
-    fp = fopen("./game.srm", "wb");
+    char save_file[256];
+	sprintf(save_file,"MD-%04X.srm", rominfo.realchecksum);
+    fp = fopen(save_file, "wb");
     if (fp!=NULL)
     {
       fwrite(sram.sram,0x10000,1, fp);
