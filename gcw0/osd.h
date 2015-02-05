@@ -17,6 +17,8 @@
 #include "unzip.h"
 #include "fileio.h"
 
+#define MAXPATHLEN 1024
+#define DEFAULT_PATH  "/genplus"
 #define osd_input_update sdl_input_update
 
 #define GG_ROM      "./ggenie.bin"

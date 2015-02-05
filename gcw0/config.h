@@ -2,16 +2,17 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
+#include <pwd.h>
 /****************************************************************************
- * Config Option 
+ * Config Option
  *
  ****************************************************************************/
-typedef struct 
+typedef struct
 {
   uint8 padtype;
 } t_input_config;
 
-typedef struct 
+typedef struct
 {
   uint8 hq_fm;
   uint8 filter;
@@ -48,6 +49,7 @@ typedef struct
 
 /* Global variables */
 extern t_config config;
+extern void config_save(void);
 extern void set_config_defaults(void);
 
 #endif /* _CONFIG_H_ */
