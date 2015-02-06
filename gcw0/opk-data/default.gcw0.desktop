@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Genesis Plus GX
+Comment=Genesis Plus GX for GCW-Zero
+Exec=gen_gcw0
+Terminal=false
+Type=Application
+StartupNotify=true
+Icon=md
+Categories=emulators
