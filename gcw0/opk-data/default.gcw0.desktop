@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Genesis Plus GX
 Comment=Genesis Plus GX for GCW-Zero
+MimeType=application/zip;
 Exec=gen_gcw0 %f
 Terminal=false
 Type=Application
