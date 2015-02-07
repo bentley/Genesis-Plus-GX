@@ -4,15 +4,13 @@
 #define MessageBox(owner, text, caption, type) printf("%s: %s\n", caption, text)
 #endif
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <dirent.h>
 #include "SDL.h"
 #include "SDL_thread.h"
 
 #include "shared.h"
 #include "sms_ntsc.h"
 #include "md_ntsc.h"
+#include "utils.h"
 
 #define SOUND_FREQUENCY 48000
 #define SOUND_SAMPLES_SIZE  2048
@@ -388,8 +386,9 @@ static int sdl_control_update(SDLKey keystate)
     case SDLK_F7:
     {
         char save_state_file[256];
-        sprintf(save_state_file,"MD-%04X.gp0", rominfo.realchecksum);
+        sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), rominfo.realchecksum);
         FILE *f = fopen(save_state_file,"rb");
+        
         if (f)
         {
             uint8 buf[STATE_SIZE];
@@ -403,7 +402,7 @@ static int sdl_control_update(SDLKey keystate)
     case SDLK_F8:
     {
         char save_state_file[256];
-        sprintf(save_state_file,"MD-%04X.gp0", rominfo.realchecksum);
+        sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), rominfo.realchecksum);
         FILE *f = fopen(save_state_file,"wb");
         if (f)
         {
@@ -747,24 +746,10 @@ int main (int argc, char **argv)
 
     /* set default config */
     error_init();
+    create_default_directories();
     set_config_defaults();
 
-/* creating default directories */
-//TODO: extract to function
 
-    /* base directory */
-    const char *homedir;
-    if ((homedir = getenv("HOME")) == NULL) {
-        homedir = getpwuid(getuid())->pw_dir;
-    }
-
-    char pathname[MAXPATHLEN];
-    sprintf (pathname, "%s%s", homedir, DEFAULT_PATH);
-    printf(pathname);
-    DIR *dir = opendir(pathname);
-    if (dir) closedir(dir);
-    else mkdir(pathname,S_IRWXU);
-////////////////////////////////////////////////////
     /* mark all BIOS as unloaded */
     system_bios = 0;
 
@@ -893,7 +878,7 @@ int main (int argc, char **argv)
     {
         /* load SRAM */
         char save_file[256];
-        sprintf(save_file,"MD-%04X.srm", rominfo.realchecksum);
+        sprintf(save_file,"%s/%X.srm", get_save_directory(), rominfo.realchecksum);
         fp = fopen(save_file, "rb");
         if (fp!=NULL)
         {
@@ -982,7 +967,7 @@ int main (int argc, char **argv)
     {
         /* save SRAM */
         char save_file[256];
-        sprintf(save_file,"MD-%04X.srm", rominfo.realchecksum);
+        sprintf(save_file,"%s/%X.srm", get_save_directory(), rominfo.realchecksum);
         fp = fopen(save_file, "wb");
         if (fp!=NULL)
         {

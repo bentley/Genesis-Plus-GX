@@ -98,7 +98,8 @@ OBJECTS	+=	$(OBJDIR)/main.o	\
 		$(OBJDIR)/config.o	\
 		$(OBJDIR)/error.o	\
 		$(OBJDIR)/unzip.o       \
-		$(OBJDIR)/fileio.o	
+		$(OBJDIR)/fileio.o		\
+		$(OBJDIR)/utils.o	
 
 OBJECTS	+=	$(OBJDIR)/bitwise.o	 \
 		$(OBJDIR)/block.o      \
