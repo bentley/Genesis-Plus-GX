@@ -26,6 +26,8 @@ int turbo_mode  = 0;
 int use_sound   = 1;
 int fullscreen  = 0; /* SDL_FULLSCREEN */
 
+uint32 crc = 0;
+
 /* sound */
 
 struct
@@ -705,7 +707,36 @@ int sdl_input_update(void)
         if(keystate[SDLK_RETURN])  input.pad[joynum] |= INPUT_START;
         if(keystate[SDLK_TAB])  input.pad[joynum] |= INPUT_X;//l
         if(keystate[SDLK_SPACE])  input.pad[joynum] |= INPUT_Y; //y
-        if(keystate[SDLK_BACKSPACE])  input.pad[joynum] |= INPUT_Z; //y
+        if(keystate[SDLK_BACKSPACE])  input.pad[joynum] |= INPUT_Z; //r
+        
+        
+        if (keystate[SDLK_RETURN] && keystate[SDLK_TAB]) { //START + L
+			/* savestate */
+			char save_state_file[256];
+			sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc);
+			FILE *f = fopen(save_state_file,"wb");
+			if (f)
+			{
+				uint8 buf[STATE_SIZE];
+				int len = state_save(buf);
+				fwrite(&buf, len, 1, f);
+				fclose(f);
+			}
+		}
+		
+		if (keystate[SDLK_RETURN] && keystate[SDLK_BACKSPACE]) { //START + R
+			/* loadstate */
+			char save_state_file[256];
+			sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc );
+			FILE *f = fopen(save_state_file,"rb");
+			if (f)
+			{
+				uint8 buf[STATE_SIZE];
+				fread(&buf, STATE_SIZE, 1, f);
+				state_load(buf);
+				fclose(f);
+			}
+		}
 #else
         if(keystate[SDLK_a])  input.pad[joynum] |= INPUT_A;
         if(keystate[SDLK_s])  input.pad[joynum] |= INPUT_B;
@@ -818,6 +849,8 @@ int main (int argc, char **argv)
         MessageBox(NULL, caption, "Error", 0);
         exit(1);
     }
+    
+    crc = crc32(0, cart.rom, cart.romsize);
 
     /* initialize system hardware */
     audio_init(SOUND_FREQUENCY, 0);
@@ -878,7 +911,7 @@ int main (int argc, char **argv)
     {
         /* load SRAM */
         char save_file[256];
-        sprintf(save_file,"%s/%X.srm", get_save_directory(), rominfo.realchecksum);
+        sprintf(save_file,"%s/%X.srm", get_save_directory(), crc);
         fp = fopen(save_file, "rb");
         if (fp!=NULL)
         {
@@ -967,7 +1000,7 @@ int main (int argc, char **argv)
     {
         /* save SRAM */
         char save_file[256];
-        sprintf(save_file,"%s/%X.srm", get_save_directory(), rominfo.realchecksum);
+        sprintf(save_file,"%s/%X.srm", get_save_directory(), crc);
         fp = fopen(save_file, "wb");
         if (fp!=NULL)
         {
