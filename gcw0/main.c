@@ -774,10 +774,65 @@ int sdl_input_update(void)
 }
 
 
+static void shutdown() {
+	FILE *fp;
+	crc = crc32(0, cart.rom, cart.romsize);
+	
+	//TODO: verify SCD backup room dir and files
+    if (system_hw == SYSTEM_MCD)
+    {
+        /* save internal backup RAM (if formatted) */
+        if (!memcmp(scd.bram + 0x2000 - 0x20, brm_format + 0x20, 0x20))
+        {
+            fp = fopen("./scd.brm", "wb");
+            if (fp!=NULL)
+            {
+                fwrite(scd.bram, 0x2000, 1, fp);
+                fclose(fp);
+            }
+        }
+
+        /* save cartridge backup RAM (if formatted) */
+        if (scd.cartridge.id)
+        {
+            if (!memcmp(scd.cartridge.area + scd.cartridge.mask + 1 - 0x20, brm_format + 0x20, 0x20))
+            {
+                fp = fopen("./cart.brm", "wb");
+                if (fp!=NULL)
+                {
+                    fwrite(scd.cartridge.area, scd.cartridge.mask + 1, 1, fp);
+                    fclose(fp);
+                }
+            }
+        }
+    }
+
+    if (sram.on)
+    {
+        /* save SRAM */
+        char save_file[256];
+        sprintf(save_file,"%s/%X.srm", get_save_directory(), crc);
+        fp = fopen(save_file, "wb");
+        if (fp!=NULL)
+        {
+            fwrite(sram.sram,0x10000,1, fp);
+            fclose(fp);
+        }
+    }
+    audio_shutdown();
+    error_shutdown();
+
+    sdl_video_close();
+    sdl_sound_close();
+    sdl_sync_close();
+    SDL_Quit();
+}
+
 int main (int argc, char **argv)
 {
     FILE *fp;
     int running = 1;
+    atexit(shutdown);
 
     /* Print help if no game specified */
     if(argc < 2)
@@ -980,54 +1035,7 @@ int main (int argc, char **argv)
             SDL_SemWait(sdl_sync.sem_sync);
         }
     }
-
-    if (system_hw == SYSTEM_MCD)
-    {
-        /* save internal backup RAM (if formatted) */
-        if (!memcmp(scd.bram + 0x2000 - 0x20, brm_format + 0x20, 0x20))
-        {
-            fp = fopen("./scd.brm", "wb");
-            if (fp!=NULL)
-            {
-                fwrite(scd.bram, 0x2000, 1, fp);
-                fclose(fp);
-            }
-        }
-
-        /* save cartridge backup RAM (if formatted) */
-        if (scd.cartridge.id)
-        {
-            if (!memcmp(scd.cartridge.area + scd.cartridge.mask + 1 - 0x20, brm_format + 0x20, 0x20))
-            {
-                fp = fopen("./cart.brm", "wb");
-                if (fp!=NULL)
-                {
-                    fwrite(scd.cartridge.area, scd.cartridge.mask + 1, 1, fp);
-                    fclose(fp);
-                }
-            }
-        }
-    }
-
-    if (sram.on)
-    {
-        /* save SRAM */
-        char save_file[256];
-        sprintf(save_file,"%s/%X.srm", get_save_directory(), crc);
-        fp = fopen(save_file, "wb");
-        if (fp!=NULL)
-        {
-            fwrite(sram.sram,0x10000,1, fp);
-            fclose(fp);
-        }
-    }
-    audio_shutdown();
-    error_shutdown();
-
-    sdl_video_close();
-    sdl_sound_close();
-    sdl_sync_close();
-    SDL_Quit();
-
+    
     return 0;
+
 }
