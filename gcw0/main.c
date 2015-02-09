@@ -24,7 +24,7 @@ int log_error   = 0;
 int debug_on    = 0;
 int turbo_mode  = 0;
 int use_sound   = 1;
-int fullscreen  = 0; /* SDL_FULLSCREEN */
+int fullscreen  = 1; /* SDL_FULLSCREEN */
 
 uint32 crc = 0;
 
@@ -162,7 +162,13 @@ static int sdl_video_init()
         MessageBox(NULL, "SDL Video initialization failed", "Error", 0);
         return 0;
     }
-    sdl_video.surf_screen  = SDL_SetVideoMode(VIDEO_WIDTH, VIDEO_HEIGHT, 16, SDL_HWSURFACE | fullscreen| SDL_DOUBLEBUF);
+    sdl_video.surf_screen  = SDL_SetVideoMode(VIDEO_WIDTH, VIDEO_HEIGHT, 16, SDL_HWSURFACE | fullscreen | 
+	#ifdef SDL_TRIPLEBUF
+		SDL_TRIPLEBUF
+	#else
+		SDL_DOUBLEBUF
+	#endif
+    );
     sdl_video.surf_bitmap = SDL_CreateRGBSurface(SDL_HWSURFACE, 720, 576, 16, 0, 0, 0, 0);
     sdl_video.frames_rendered = 0;
     SDL_ShowCursor(0);
