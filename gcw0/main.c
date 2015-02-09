@@ -508,10 +508,12 @@ static int sdl_control_update(SDLKey keystate)
         break;
     }
 
+#ifndef GCW0
     case SDLK_ESCAPE:
     {
         return 0;
     }
+#endif
 
     default:
         break;
@@ -716,7 +718,7 @@ int sdl_input_update(void)
         if(keystate[SDLK_BACKSPACE])  input.pad[joynum] |= INPUT_Z; //r
         
         
-        if (keystate[SDLK_RETURN] && keystate[SDLK_TAB]) { //START + L
+        if (keystate[SDLK_ESCAPE] && keystate[SDLK_TAB]) { //SELECT + L
 			/* savestate */
 			char save_state_file[256];
 			sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc);
@@ -730,7 +732,7 @@ int sdl_input_update(void)
 			}
 		}
 		
-		if (keystate[SDLK_RETURN] && keystate[SDLK_BACKSPACE]) { //START + R
+		if (keystate[SDLK_ESCAPE] && keystate[SDLK_BACKSPACE]) { //SELECT + R
 			/* loadstate */
 			char save_state_file[256];
 			sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc );
@@ -742,6 +744,11 @@ int sdl_input_update(void)
 				state_load(buf);
 				fclose(f);
 			}
+		}
+		
+		if (keystate[SDLK_ESCAPE] && keystate[SDLK_RETURN]) { //START + SELECT
+			/* exit */
+			return 0;
 		}
 #else
         if(keystate[SDLK_a])  input.pad[joynum] |= INPUT_A;
