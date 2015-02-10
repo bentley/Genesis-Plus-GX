@@ -13,6 +13,7 @@
 #include "utils.h"
 
 #ifdef GCWZERO
+#include <SDL_ttf.h>
 static int gcw0menu_fullscreen;
 static int gcw0_w;
 static int gcw0_h;
@@ -131,7 +132,7 @@ static void sdl_sound_update(enabled)
 
         SDL_LockAudio();
         out = (short*)sdl_sound.current_pos;
-        for(i = 0; i < size; i++)
+        for(i = 0; i < size; i++) 
         {
             *out++ = soundframe[i];
         }
@@ -592,17 +593,68 @@ static int sdl_control_update(SDLKey keystate)
 static int gcw0menu(void)
 {
 //TODO
-//pause emulation, sound
-//    if(use_sound) SDL_PauseAudio(0); 	//sound
-					//emulation
-//display menu
-//user input
+	/* display menu */
+	//change video mode
+        sdl_video.surf_screen  = SDL_SetVideoMode(320,240, 16, SDL_HWSURFACE |  
+        #ifdef SDL_TRIPLEBUF
+        SDL_TRIPLEBUF);
+        #else
+        SDL_DOUBLEBUF);
+        #endif
+//	blank screen
+        SDL_FillRect(sdl_video.surf_screen, 0, 0);
+//	set up menu surface
+	SDL_Surface *menuSurface = NULL;
+	menuSurface = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 16, 0, 0, 0, 0);
 
+	int done;
+	while(!done) {
+//	show background
+//	show menu
+		const char *gcw0menu_mainlist[8]={
+			"Save state", 
+			"Load state", 
+			"Graphics options", 
+			"Remap buttons", 
+			"Resume game",
+			"", //spacer
+			"Reset",
+			"Quit"};
+
+//display text
+	                TTF_Init();
+        	        TTF_Font *ttffont = NULL;
+                	SDL_Color text_color = {128, 128, 128};
+	                ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
+        	        SDL_Surface *textSurface;
+			int i;
+			for(i=0;i<8;i++) {
+		                textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_mainlist[i], text_color);
+        		        SDL_Rect destination;
+	                	destination.x = 100;
+        	      		destination.y = 40+(15*i);
+                		destination.w = 100; 
+	                	destination.h = 50;
+        	        	SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+			}
+	                SDL_FreeSurface(textSurface);
+        	        TTF_CloseFont (ttffont);
+		SDL_Rect dest;
+		dest.w = 320;
+		dest.h = 240;
+		dest.x = 0;
+		dest.y = 0;
+		SDL_BlitSurface(menuSurface, NULL, sdl_video.surf_screen, &dest);
+		SDL_Flip(sdl_video.surf_screen);
+	}//done
+//wait(1000);
+//start menu loop
+//user input
 //change variables
 
-//for now we'll just toggle fullscreen
+//but for now we'll just toggle fullscreen
+/*
     gcw0menu_fullscreen = !gcw0menu_fullscreen;//toggle
-    bitmap.viewport.changed=1;
     if(!gcw0menu_fullscreen) {
         gcw0_w=320;
         gcw0_h=240;
@@ -614,7 +666,11 @@ static int gcw0menu(void)
         SDL_DOUBLEBUF);
         #endif
     }
-return 1;
+*/
+
+    bitmap.viewport.changed=1; //change screen res if required
+
+    return 1;
 }
 #endif
 
