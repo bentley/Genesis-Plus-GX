@@ -12,8 +12,9 @@
 #include "md_ntsc.h"
 #include "utils.h"
 
-#define SOUND_FREQUENCY 48000
-#define SOUND_SAMPLES_SIZE  2048
+//DK no difference?  #define SOUND_FREQUENCY 48000
+#define SOUND_FREQUENCY    44100
+#define SOUND_SAMPLES_SIZE 2048
 
 #define VIDEO_WIDTH  320
 #define VIDEO_HEIGHT 240
@@ -162,12 +163,16 @@ static int sdl_video_init()
         MessageBox(NULL, "SDL Video initialization failed", "Error", 0);
         return 0;
     }
+#ifdef GCWZERO
+    sdl_video.surf_screen  = SDL_SetVideoMode(VIDEO_WIDTH, VIDEO_HEIGHT, 16, SDL_HWSURFACE |  
+#else
     sdl_video.surf_screen  = SDL_SetVideoMode(VIDEO_WIDTH, VIDEO_HEIGHT, 16, SDL_HWSURFACE | fullscreen | 
-	#ifdef SDL_TRIPLEBUF
-		SDL_TRIPLEBUF
-	#else
-		SDL_DOUBLEBUF
-	#endif
+#endif
+#ifdef SDL_TRIPLEBUF
+    SDL_TRIPLEBUF
+#else
+    SDL_DOUBLEBUF
+#endif
     );
     sdl_video.surf_bitmap = SDL_CreateRGBSurface(SDL_HWSURFACE, 720, 576, 16, 0, 0, 0, 0);
     sdl_video.frames_rendered = 0;
@@ -214,7 +219,7 @@ static void sdl_video_update()
         /* destination bitmap */
         sdl_video.drect.w = sdl_video.srect.w;
         sdl_video.drect.h = sdl_video.srect.h;
-        sdl_video.drect.x = (VIDEO_WIDTH - sdl_video.drect.w) / 2;
+        sdl_video.drect.x = (VIDEO_WIDTH  - sdl_video.drect.w) / 2;
         sdl_video.drect.y = (VIDEO_HEIGHT - sdl_video.drect.h) / 2;
 
         /* clear destination surface */
@@ -260,6 +265,55 @@ static void sdl_video_update()
         }
 #endif
     }
+
+//DK IPU scaling for gg/sms roms
+#ifdef GCWZERO
+    static int gcw0menu_fullscreen=2;//TEMPORARY VARIABLE - need to integrate into menu, toggle 0:2
+    if (gcw0menu_fullscreen) {
+	gcw0menu_fullscreen--;                       //	md	gg	sms  <--values from testing
+printf("\nsdl_video.drect.w = %d",sdl_video.drect.w);//	320	160	256
+printf("\nsdl_video.drect.h = %d",sdl_video.drect.h);//	192	144	192
+printf("\nsdl_video.drect.x = %d",sdl_video.drect.x);//	0	80	32
+printf("\nsdl_video.drect.y = %d",sdl_video.drect.y);//	24	48	24
+printf("\nsdl_video.srect.w = %d",sdl_video.srect.w);//	320	160	256
+printf("\nsdl_video.srect.h = %d",sdl_video.srect.h);//	192	144	192
+printf("\nsdl_video.srect.x = %d",sdl_video.srect.x);//	0	0	0
+printf("\nsdl_video.srect.y = %d",sdl_video.srect.y);//	0	0	0
+printf("\nbitmap.viewport.w = %d",bitmap.viewport.w);//	320	256	256
+printf("\nbitmap.viewport.h = %d",bitmap.viewport.h);//	192	192	192
+printf("\nbitmap.viewport.x = %d",bitmap.viewport.x);//	0	-48	0
+printf("\nbitmap.viewport.y = %d",bitmap.viewport.y);//	0	-24	0
+//probably need to add below section as well...
+/*        if (sdl_video.srect.w > VIDEO_WIDTH)
+        {
+            sdl_video.srect.x = (sdl_video.srect.w - VIDEO_WIDTH) / 2;
+            sdl_video.srect.w = VIDEO_WIDTH;
+        }
+        if (sdl_video.srect.h > VIDEO_HEIGHT)
+        {
+            sdl_video.srect.y = (sdl_video.srect.h - VIDEO_HEIGHT) / 2;
+            sdl_video.srect.h = VIDEO_HEIGHT;
+        }
+*/
+        /* destination bitmap */
+        sdl_video.drect.w = sdl_video.srect.w;
+        sdl_video.drect.h = sdl_video.srect.h;
+        sdl_video.drect.x = 0;
+        sdl_video.drect.y = 0;
+        int gcw_w=sdl_video.drect.w;
+        int gcw_h=sdl_video.drect.h;
+
+        sdl_video.surf_screen  = SDL_SetVideoMode(gcw_w,gcw_h, 16, SDL_HWSURFACE |  
+#ifdef SDL_TRIPLEBUF
+        SDL_TRIPLEBUF
+#else
+        SDL_DOUBLEBUF
+#endif
+        );
+
+	}
+#endif
+
 
     SDL_BlitSurface(sdl_video.surf_bitmap, &sdl_video.srect, sdl_video.surf_screen, &sdl_video.drect);
     //SDL_UpdateRect(sdl_video.surf_screen, 0, 0, 0, 0);
@@ -709,13 +763,13 @@ int sdl_input_update(void)
     default:
     {
 #ifdef GCWZERO
-        if(keystate[SDLK_LSHIFT])  input.pad[joynum] |= INPUT_A;//x
-        if(keystate[SDLK_LALT])  input.pad[joynum] |= INPUT_B;//b
-        if(keystate[SDLK_LCTRL])  input.pad[joynum] |= INPUT_C;//a
-        if(keystate[SDLK_RETURN])  input.pad[joynum] |= INPUT_START;
-        if(keystate[SDLK_TAB])  input.pad[joynum] |= INPUT_X;//l
-        if(keystate[SDLK_SPACE])  input.pad[joynum] |= INPUT_Y; //y
-        if(keystate[SDLK_BACKSPACE])  input.pad[joynum] |= INPUT_Z; //r
+        if(keystate[SDLK_LSHIFT])    input.pad[joynum] |= INPUT_A;//x
+        if(keystate[SDLK_LALT])      input.pad[joynum] |= INPUT_B;//b
+        if(keystate[SDLK_LCTRL])     input.pad[joynum] |= INPUT_C;//a
+        if(keystate[SDLK_RETURN])    input.pad[joynum] |= INPUT_START;
+        if(keystate[SDLK_TAB])       input.pad[joynum] |= INPUT_X;//l
+        if(keystate[SDLK_SPACE])     input.pad[joynum] |= INPUT_Y; //y
+        if(keystate[SDLK_BACKSPACE]) input.pad[joynum] |= INPUT_Z; //r
         
         
         if (keystate[SDLK_ESCAPE] && keystate[SDLK_TAB]) { //SELECT + L
@@ -762,9 +816,9 @@ int sdl_input_update(void)
 #endif
 
 
-        if(keystate[SDLK_UP]) input.pad[joynum] |= INPUT_UP;
-        else if(keystate[SDLK_DOWN]) input.pad[joynum] |= INPUT_DOWN;
-        if(keystate[SDLK_LEFT]) input.pad[joynum] |= INPUT_LEFT;
+        if(keystate[SDLK_UP])         input.pad[joynum] |= INPUT_UP;
+        else if(keystate[SDLK_DOWN])  input.pad[joynum] |= INPUT_DOWN;
+        if(keystate[SDLK_LEFT])       input.pad[joynum] |= INPUT_LEFT;
         else if(keystate[SDLK_RIGHT]) input.pad[joynum] |= INPUT_RIGHT;
 
         break;
