@@ -575,12 +575,7 @@ static int sdl_control_update(SDLKey keystate)
 
     case SDLK_ESCAPE:
     {
-#ifdef GCWZERO
-	if (keystate[SDLK_ESCAPE] && keystate[SDLK_RETURN]) { //START + SELECT
-	    //DK lets go to the menu instead of exiting
-	    gcw0menu();
-	}
-#else
+#ifndef GCWZERO
 	/* exit */
         return 0;
 #endif
@@ -817,36 +812,41 @@ int sdl_input_update(void)
         if(keystate[SDLK_TAB])       input.pad[joynum] |= INPUT_X;//l
         if(keystate[SDLK_SPACE])     input.pad[joynum] |= INPUT_Y; //y
         if(keystate[SDLK_BACKSPACE]) input.pad[joynum] |= INPUT_Z; //r
-        
-        
-        if (keystate[SDLK_ESCAPE] && keystate[SDLK_TAB]) { //SELECT + L
-			/* savestate */
-			char save_state_file[256];
-			sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc);
-			FILE *f = fopen(save_state_file,"wb");
-			if (f)
-			{
-				uint8 buf[STATE_SIZE];
-				int len = state_save(buf);
-				fwrite(&buf, len, 1, f);
-				fclose(f);
-			}
+
+//DK load/save better handled by menu?
+	if (keystate[SDLK_ESCAPE]) {// && keystate[SDLK_RETURN]) { //START + SELECT
+	    //DK lets go to the menu instead of exiting
+	    gcw0menu();
+	}
+//DK disable the following for now, will be added to the menu
+/*        if (keystate[SDLK_ESCAPE] && keystate[SDLK_TAB]) { //SELECT + L
+*/		/* savestate */
+/*		char save_state_file[256];
+		sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc);
+		FILE *f = fopen(save_state_file,"wb");
+		if (f)
+		{
+			uint8 buf[STATE_SIZE];
+			int len = state_save(buf);
+			fwrite(&buf, len, 1, f);
+			fclose(f);
 		}
+	}
 		
-		if (keystate[SDLK_ESCAPE] && keystate[SDLK_BACKSPACE]) { //SELECT + R
-			/* loadstate */
-			char save_state_file[256];
-			sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc );
-			FILE *f = fopen(save_state_file,"rb");
-			if (f)
-			{
-				uint8 buf[STATE_SIZE];
-				fread(&buf, STATE_SIZE, 1, f);
-				state_load(buf);
-				fclose(f);
-			}
+	if (keystate[SDLK_ESCAPE] && keystate[SDLK_BACKSPACE]) { //SELECT + R
+*/		/* loadstate */
+/*		char save_state_file[256];
+		sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc );
+		FILE *f = fopen(save_state_file,"rb");
+		if (f)
+		{
+			uint8 buf[STATE_SIZE];
+			fread(&buf, STATE_SIZE, 1, f);
+			state_load(buf);
+			fclose(f);
 		}
-		
+	}
+*/		
 #else
         if(keystate[SDLK_a])  input.pad[joynum] |= INPUT_A;
         if(keystate[SDLK_s])  input.pad[joynum] |= INPUT_B;
@@ -859,10 +859,10 @@ int sdl_input_update(void)
 #endif
 
 
-        if(keystate[SDLK_UP])         input.pad[joynum] |= INPUT_UP;
-        else if(keystate[SDLK_DOWN])  input.pad[joynum] |= INPUT_DOWN;
-        if(keystate[SDLK_LEFT])       input.pad[joynum] |= INPUT_LEFT;
-        else if(keystate[SDLK_RIGHT]) input.pad[joynum] |= INPUT_RIGHT;
+        if     (keystate[SDLK_UP]   )  input.pad[joynum] |= INPUT_UP;
+        else if(keystate[SDLK_DOWN] )  input.pad[joynum] |= INPUT_DOWN;
+        if     (keystate[SDLK_LEFT] )  input.pad[joynum] |= INPUT_LEFT;
+        else if(keystate[SDLK_RIGHT])  input.pad[joynum] |= INPUT_RIGHT;
 
         break;
     }
