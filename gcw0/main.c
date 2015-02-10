@@ -12,6 +12,12 @@
 #include "md_ntsc.h"
 #include "utils.h"
 
+#ifdef GCWZERO
+static int gcw0menu_fullscreen;
+static int gcw0_w;
+static int gcw0_h;
+#endif
+
 //DK no difference?  #define SOUND_FREQUENCY 48000
 #define SOUND_FREQUENCY    44100
 #define SOUND_SAMPLES_SIZE 2048
@@ -268,9 +274,9 @@ static void sdl_video_update()
 
 //DK IPU scaling for gg/sms roms
 #ifdef GCWZERO
-    static int gcw0menu_fullscreen=2;//TEMPORARY VARIABLE - need to integrate into menu, toggle 0:2
     if (gcw0menu_fullscreen) {
-	gcw0menu_fullscreen--;                       //	md	gg	sms  <--values from testing
+/* ***TESTING***
+//	gcw0menu_fullscreen--;                       //	md	gg	sms  <--values from testing
 printf("\nsdl_video.drect.w = %d",sdl_video.drect.w);//	320	160	256
 printf("\nsdl_video.drect.h = %d",sdl_video.drect.h);//	192	144	192
 printf("\nsdl_video.drect.x = %d",sdl_video.drect.x);//	0	80	32
@@ -283,6 +289,8 @@ printf("\nbitmap.viewport.w = %d",bitmap.viewport.w);//	320	256	256
 printf("\nbitmap.viewport.h = %d",bitmap.viewport.h);//	192	192	192
 printf("\nbitmap.viewport.x = %d",bitmap.viewport.x);//	0	-48	0
 printf("\nbitmap.viewport.y = %d",bitmap.viewport.y);//	0	-24	0
+*/
+
 //probably need to add below section as well...
 /*        if (sdl_video.srect.w > VIDEO_WIDTH)
         {
@@ -295,30 +303,33 @@ printf("\nbitmap.viewport.y = %d",bitmap.viewport.y);//	0	-24	0
             sdl_video.srect.h = VIDEO_HEIGHT;
         }
 */
-        /* destination bitmap */
-        sdl_video.drect.w = sdl_video.srect.w;
-        sdl_video.drect.h = sdl_video.srect.h;
-        sdl_video.drect.x = 0;
-        sdl_video.drect.y = 0;
-        int gcw_w=sdl_video.drect.w;
-        int gcw_h=sdl_video.drect.h;
+        if( (gcw0_w != sdl_video.drect.w) || (gcw0_h != sdl_video.drect.h) ) {
+            sdl_video.drect.w = sdl_video.srect.w;
+            sdl_video.drect.h = sdl_video.srect.h;
+            sdl_video.drect.x = 0;
+            sdl_video.drect.y = 0;
+            gcw0_w=sdl_video.drect.w;
+            gcw0_h=sdl_video.drect.h;
 
-        sdl_video.surf_screen  = SDL_SetVideoMode(gcw_w,gcw_h, 16, SDL_HWSURFACE |  
-#ifdef SDL_TRIPLEBUF
-        SDL_TRIPLEBUF
-#else
-        SDL_DOUBLEBUF
+            sdl_video.surf_screen  = SDL_SetVideoMode(gcw0_w,gcw0_h, 16, SDL_HWSURFACE |  
+            #ifdef SDL_TRIPLEBUF
+            SDL_TRIPLEBUF);
+            #else
+            SDL_DOUBLEBUF);
+            #endif
+        }
+    }
 #endif
-        );
-
-	}
-#endif
-
 
     SDL_BlitSurface(sdl_video.surf_bitmap, &sdl_video.srect, sdl_video.surf_screen, &sdl_video.drect);
     //SDL_UpdateRect(sdl_video.surf_screen, 0, 0, 0, 0);
-    SDL_Flip(sdl_video.surf_screen);
 
+//DK frameskip testing, uncomment below to set to 30fps flipped (virtual racing tests)
+//static int eo;
+//if(eo){
+    SDL_Flip(sdl_video.surf_screen);
+//eo--;}
+//else eo++;
     ++sdl_video.frames_rendered;
 }
 
@@ -562,12 +573,18 @@ static int sdl_control_update(SDLKey keystate)
         break;
     }
 
-#ifndef GCW0
     case SDLK_ESCAPE:
     {
+#ifdef GCWZERO
+	if (keystate[SDLK_ESCAPE] && keystate[SDLK_RETURN]) { //START + SELECT
+	    //DK lets go to the menu instead of exiting
+	    gcw0menu();
+	}
+#else
+	/* exit */
         return 0;
-    }
 #endif
+    }
 
     default:
         break;
@@ -575,6 +592,36 @@ static int sdl_control_update(SDLKey keystate)
 
     return 1;
 }
+
+#ifdef GCWZERO //menu!
+static int gcw0menu(void)
+{
+//TODO
+//pause emulation, sound
+//    if(use_sound) SDL_PauseAudio(0); 	//sound
+					//emulation
+//display menu
+//user input
+
+//change variables
+
+//for now we'll just toggle fullscreen
+    gcw0menu_fullscreen = !gcw0menu_fullscreen;//toggle
+    bitmap.viewport.changed=1;
+    if(!gcw0menu_fullscreen) {
+        gcw0_w=320;
+        gcw0_h=240;
+
+        sdl_video.surf_screen  = SDL_SetVideoMode(gcw0_w,gcw0_h, 16, SDL_HWSURFACE |  
+        #ifdef SDL_TRIPLEBUF
+        SDL_TRIPLEBUF);
+        #else
+        SDL_DOUBLEBUF);
+        #endif
+    }
+return 1;
+}
+#endif
 
 int sdl_input_update(void)
 {
@@ -800,10 +847,6 @@ int sdl_input_update(void)
 			}
 		}
 		
-		if (keystate[SDLK_ESCAPE] && keystate[SDLK_RETURN]) { //START + SELECT
-			/* exit */
-			return 0;
-		}
 #else
         if(keystate[SDLK_a])  input.pad[joynum] |= INPUT_A;
         if(keystate[SDLK_s])  input.pad[joynum] |= INPUT_B;
