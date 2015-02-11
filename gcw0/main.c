@@ -616,7 +616,6 @@ static int gcw0menu(void)
         TTF_Font *ttffont = NULL;
         SDL_Color text_color = {128, 128, 128};
         SDL_Color selected_text_color = {23, 86, 155}; //selected colour = Sega blue ;)
-	ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
         SDL_Surface *textSurface;
 
 	int i;
@@ -626,6 +625,7 @@ static int gcw0menu(void)
         {
 	    for(i=0;i<8;i++) 
 	    {
+		ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
         	SDL_Rect destination;
 	        destination.x = 100;
              	destination.y = 40+(15*i);
@@ -636,11 +636,14 @@ static int gcw0menu(void)
 		else
 	            textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_mainlist[i], text_color);
 	      	SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+		SDL_FreeSurface(textSurface);
+        	TTF_CloseFont (ttffont);
 	    }
 	} else if (showgraphicsoptions) 
 	{
 	    for(i=0;i<2;i++) 
 	    {
+		ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
                 SDL_Rect destination;
 		destination.x = 100;
                	destination.y = 40+(15*i);
@@ -648,9 +651,11 @@ static int gcw0menu(void)
 	       	destination.h = 50;
 		textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_graphicsoptionslist[i], text_color);
 		SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+		SDL_FreeSurface(textSurface);
+        	TTF_CloseFont (ttffont);
 	    }
 	}
-	
+
 //TODO other menu's go here
 
 //TODO Highlight current position, add on/off depending on variables.
@@ -746,8 +751,6 @@ static int gcw0menu(void)
 //		    break;
 	    
 	}
-	SDL_FreeSurface(textSurface);
-        TTF_CloseFont (ttffont);
 
 //change variables
     }//done
