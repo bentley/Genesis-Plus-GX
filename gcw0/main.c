@@ -231,7 +231,12 @@ static void sdl_video_update()
 
         /* clear destination surface */
         SDL_FillRect(sdl_video.surf_screen, 0, 0);
-
+#ifdef GCWZERO //triple buffering so stop flicker
+	SDL_Flip(sdl_video.surf_screen);
+        SDL_FillRect(sdl_video.surf_screen, 0, 0);
+	SDL_Flip(sdl_video.surf_screen);
+        SDL_FillRect(sdl_video.surf_screen, 0, 0);
+#endif
 #if 0
         if (config.render && (interlaced || config.ntsc))  rect.h *= 2;
         if (config.ntsc) rect.w = (reg[12]&1) ? MD_NTSC_OUT_WIDTH(rect.w) : SMS_NTSC_OUT_WIDTH(rect.w);
@@ -592,65 +597,105 @@ static int sdl_control_update(SDLKey keystate)
 #ifdef GCWZERO //menu!
 static int gcw0menu(void)
 {
-//TODO
-	/* display menu */
-	//change video mode
-        sdl_video.surf_screen  = SDL_SetVideoMode(320,240, 16, SDL_HWSURFACE |  
-        #ifdef SDL_TRIPLEBUF
-        SDL_TRIPLEBUF);
-        #else
-        SDL_DOUBLEBUF);
-        #endif
-//	blank screen
-        SDL_FillRect(sdl_video.surf_screen, 0, 0);
-//	set up menu surface
-	SDL_Surface *menuSurface = NULL;
-	menuSurface = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 16, 0, 0, 0, 0);
+    /* display menu */
+//  change video mode
+    sdl_video.surf_screen  = SDL_SetVideoMode(320,240, 16, SDL_HWSURFACE |  
+    #ifdef SDL_TRIPLEBUF
+    SDL_TRIPLEBUF);
+    #else
+    SDL_DOUBLEBUF);
+    #endif
+//  blank screen
+    SDL_FillRect(sdl_video.surf_screen, 0, 0);
+//  set up menu surface
+    SDL_Surface *menuSurface = NULL;
+    menuSurface = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 16, 0, 0, 0, 0);
 
-	int done;
-	while(!done) {
-//	show background
-//	show menu
-		const char *gcw0menu_mainlist[8]={
-			"Save state", 
-			"Load state", 
-			"Graphics options", 
-			"Remap buttons", 
-			"Resume game",
-			"", //spacer
-			"Reset",
-			"Quit"};
+//  start menu loop - default = display main menu
+    int showmainmenu        = 1;
+    int showgraphicsoptions = 0;
 
-//display text
-	                TTF_Init();
-        	        TTF_Font *ttffont = NULL;
-                	SDL_Color text_color = {128, 128, 128};
-	                ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
-        	        SDL_Surface *textSurface;
-			int i;
-			for(i=0;i<8;i++) {
-		                textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_mainlist[i], text_color);
-        		        SDL_Rect destination;
-	                	destination.x = 100;
-        	      		destination.y = 40+(15*i);
-                		destination.w = 100; 
-	                	destination.h = 50;
-        	        	SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
-			}
-	                SDL_FreeSurface(textSurface);
-        	        TTF_CloseFont (ttffont);
-		SDL_Rect dest;
-		dest.w = 320;
-		dest.h = 240;
-		dest.x = 0;
-		dest.y = 0;
-		SDL_BlitSurface(menuSurface, NULL, sdl_video.surf_screen, &dest);
-		SDL_Flip(sdl_video.surf_screen);
-	}//done
-//wait(1000);
-//start menu loop
-//user input
+    int done;
+    while(!done) {
+
+//TODO 	identify system we are using to show correct background just cos we can :P
+//TODO	show background first but we have no image - requested on Dingoonity
+
+//      show menu
+        const char *gcw0menu_mainlist[8]={
+	    "Save state",
+	    "Load state",
+	    "Graphics options",
+	    "Remap buttons",
+	    "Resume game",
+	    "", //spacer
+	    "Reset",
+	    "Quit"
+	};
+	const char *gcw0menu_graphicsoptionslist[8]={
+	    "Scaling",
+	    "Keep aspect ratio",
+	};
+	const char *gcw0menu_onofflist[2]={
+	    "On",
+	    "Off",
+	};
+//	display main menu text
+	TTF_Init();
+        TTF_Font *ttffont = NULL;
+        SDL_Color text_color = {128, 128, 128};
+	ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
+        SDL_Surface *textSurface;
+	int i;
+	if (showmainmenu) {
+	    for(i=0;i<8;i++) {
+        	SDL_Rect destination;
+	        destination.x = 100;
+             	destination.y = 40+(15*i);
+	        destination.w = 100;
+	        destination.h = 50;
+	        textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_mainlist[i], text_color);
+	      	SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+		}
+	    } else if (showgraphicsoptions) {
+		for(i=0;i<2;i++) {
+                SDL_Rect destination;
+		destination.x = 100;
+                destination.y = 40+(15*i);
+	        destination.w = 100; 
+	        destination.h = 50;
+		textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_graphicsoptionslist[i], text_color);
+	       	SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+		}
+//TODO other menu's go here
+	    /* Tidy up */
+	    SDL_FreeSurface(textSurface);
+            TTF_CloseFont (ttffont);
+
+//TODO Highlight current position, add on/off depending on variables.
+
+	    /* Update display */
+	    SDL_Rect dest;
+	    dest.w = 320;
+	    dest.h = 240;
+	    dest.x = 0;
+	    dest.y = 0;
+	    SDL_BlitSurface(menuSurface, NULL, sdl_video.surf_screen, &dest);
+	    SDL_Flip(sdl_video.surf_screen);
+//check for user input
+	    /* Check for user input */
+	    SDL_Event event;
+            if (SDL_PollEvent(&event)) {
+                switch(event.type) {
+	            case SDL_KEYDOWN: {
+		    }
+        	    case SDL_KEYUP: {
+		    }
+		}
+	    }
 //change variables
+	}//done
+
 
 //but for now we'll just toggle fullscreen
 /*
@@ -667,7 +712,7 @@ static int gcw0menu(void)
         #endif
     }
 */
-
+    }
     bitmap.viewport.changed=1; //change screen res if required
 
     return 1;
