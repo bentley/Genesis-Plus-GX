@@ -607,6 +607,7 @@ static int gcw0menu(void)
     int done;
     while(!done) 
     {
+
 //TODO 	identify system we are using to show correct background just cos we can :P
 //TODO	show background first but we have no image - requested on Dingoonity
 
@@ -690,9 +691,61 @@ static int gcw0menu(void)
 	    SDL_Delay(100);
 	}
 	if(keystate2[SDLK_LCTRL]) {
-break;
+	    if (selectedoption == 0) { //Save
+		    char save_state_file[256];
+		    sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc);
+		    FILE *f = fopen(save_state_file,"wb");
+		    if (f)
+		    {
+			uint8 buf[STATE_SIZE];
+			int len = state_save(buf);
+			fwrite(&buf, len, 1, f);
+			fclose(f);
+		    }
+		    break;
+	    }
+	    if (selectedoption == 1) { //Load
+		    char save_state_file[256];
+		    sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc );
+		    FILE *f = fopen(save_state_file,"rb");
+		    if (f)
+		    {
+			uint8 buf[STATE_SIZE];
+			fread(&buf, STATE_SIZE, 1, f);
+			state_load(buf);
+			fclose(f);
+		    }
+		    break;
+	    }
+	    if (selectedoption == 2) { //Graphics
+		    gcw0menu_fullscreen = !gcw0menu_fullscreen;//toggle
+		    if(!gcw0menu_fullscreen) {
+		        gcw0_w=320;
+		        gcw0_h=240;
+		        sdl_video.surf_screen  = SDL_SetVideoMode(gcw0_w,gcw0_h, 16, SDL_HWSURFACE |  
+		        #ifdef SDL_TRIPLEBUF
+		        SDL_TRIPLEBUF);
+		        #else
+		        SDL_DOUBLEBUF);
+		        #endif
+		    }
+		    break;
+	    }
+	    if (selectedoption == 3) { //Remap
+//TODO
+	    }
+	    if (selectedoption == 4) { //Resume
+	            break;
+	    }
+	    if (selectedoption == 6) { //Reset
+	    }
+	    if (selectedoption == 7) { //Quit
+	    }
+//	        case 7: //Quit
+//		    running = 0;
+//		    break;
+	    
 	}
-
 	SDL_FreeSurface(textSurface);
         TTF_CloseFont (ttffont);
 
@@ -702,18 +755,6 @@ break;
 
 //but for now we'll just toggle fullscreen
 /*
-    gcw0menu_fullscreen = !gcw0menu_fullscreen;//toggle
-    if(!gcw0menu_fullscreen) {
-        gcw0_w=320;
-        gcw0_h=240;
-
-        sdl_video.surf_screen  = SDL_SetVideoMode(gcw0_w,gcw0_h, 16, SDL_HWSURFACE |  
-        #ifdef SDL_TRIPLEBUF
-        SDL_TRIPLEBUF);
-        #else
-        SDL_DOUBLEBUF);
-        #endif
-    }
 */
 //    }
 	    /* Tidy up */
