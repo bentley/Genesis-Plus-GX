@@ -19,7 +19,7 @@ static int gcw0_w;
 static int gcw0_h;
 #endif
 
-//DK no difference?  #define SOUND_FREQUENCY 48000
+//DK no difference? Might as well save some cycles. #define SOUND_FREQUENCY 48000
 #define SOUND_FREQUENCY    44100
 #define SOUND_SAMPLES_SIZE 2048
 
@@ -281,34 +281,6 @@ static void sdl_video_update()
 //DK IPU scaling for gg/sms roms
 #ifdef GCWZERO
     if (gcw0menu_fullscreen) {
-/* ***TESTING***
-//	gcw0menu_fullscreen--;                       //	md	gg	sms  <--values from testing
-printf("\nsdl_video.drect.w = %d",sdl_video.drect.w);//	320	160	256
-printf("\nsdl_video.drect.h = %d",sdl_video.drect.h);//	192	144	192
-printf("\nsdl_video.drect.x = %d",sdl_video.drect.x);//	0	80	32
-printf("\nsdl_video.drect.y = %d",sdl_video.drect.y);//	24	48	24
-printf("\nsdl_video.srect.w = %d",sdl_video.srect.w);//	320	160	256
-printf("\nsdl_video.srect.h = %d",sdl_video.srect.h);//	192	144	192
-printf("\nsdl_video.srect.x = %d",sdl_video.srect.x);//	0	0	0
-printf("\nsdl_video.srect.y = %d",sdl_video.srect.y);//	0	0	0
-printf("\nbitmap.viewport.w = %d",bitmap.viewport.w);//	320	256	256
-printf("\nbitmap.viewport.h = %d",bitmap.viewport.h);//	192	192	192
-printf("\nbitmap.viewport.x = %d",bitmap.viewport.x);//	0	-48	0
-printf("\nbitmap.viewport.y = %d",bitmap.viewport.y);//	0	-24	0
-*/
-
-//probably need to add below section as well...
-/*        if (sdl_video.srect.w > VIDEO_WIDTH)
-        {
-            sdl_video.srect.x = (sdl_video.srect.w - VIDEO_WIDTH) / 2;
-            sdl_video.srect.w = VIDEO_WIDTH;
-        }
-        if (sdl_video.srect.h > VIDEO_HEIGHT)
-        {
-            sdl_video.srect.y = (sdl_video.srect.h - VIDEO_HEIGHT) / 2;
-            sdl_video.srect.h = VIDEO_HEIGHT;
-        }
-*/
         if( (gcw0_w != sdl_video.drect.w) || (gcw0_h != sdl_video.drect.h) ) {
             sdl_video.drect.w = sdl_video.srect.w;
             sdl_video.drect.h = sdl_video.srect.h;
@@ -612,89 +584,120 @@ static int gcw0menu(void)
     menuSurface = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 16, 0, 0, 0, 0);
 
 //  start menu loop - default = display main menu
-    int showmainmenu        = 1;
-    int showgraphicsoptions = 0;
-
+    int showmainmenu          = 1;
+    int showgraphicsoptions   = 0;
+    const char *gcw0menu_mainlist[8]={
+        "Save state",
+	"Load state",
+	"Graphics options",
+	"Remap buttons",
+	"Resume game",
+	"", //spacer
+	"Reset",
+	"Quit"
+    };
+    const char *gcw0menu_graphicsoptionslist[8]={
+        "Scaling",
+        "Keep aspect ratio",
+    };
+    const char *gcw0menu_onofflist[2]={
+        "On",
+        "Off",
+    };
     int done;
-    while(!done) {
-
+    while(!done) 
+    {
 //TODO 	identify system we are using to show correct background just cos we can :P
 //TODO	show background first but we have no image - requested on Dingoonity
 
 //      show menu
-        const char *gcw0menu_mainlist[8]={
-	    "Save state",
-	    "Load state",
-	    "Graphics options",
-	    "Remap buttons",
-	    "Resume game",
-	    "", //spacer
-	    "Reset",
-	    "Quit"
-	};
-	const char *gcw0menu_graphicsoptionslist[8]={
-	    "Scaling",
-	    "Keep aspect ratio",
-	};
-	const char *gcw0menu_onofflist[2]={
-	    "On",
-	    "Off",
-	};
-//	display main menu text
 	TTF_Init();
         TTF_Font *ttffont = NULL;
         SDL_Color text_color = {128, 128, 128};
+        SDL_Color selected_text_color = {23, 86, 155}; //selected colour = Sega blue ;)
 	ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
         SDL_Surface *textSurface;
+
 	int i;
-	if (showmainmenu) {
-	    for(i=0;i<8;i++) {
+        static int selectedoption = 0;
+
+	if (showmainmenu) 
+        {
+	    for(i=0;i<8;i++) 
+	    {
         	SDL_Rect destination;
 	        destination.x = 100;
              	destination.y = 40+(15*i);
 	        destination.w = 100;
 	        destination.h = 50;
-	        textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_mainlist[i], text_color);
+		if (i == selectedoption)
+		    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_mainlist[i], selected_text_color);
+		else
+	            textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_mainlist[i], text_color);
 	      	SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
-		}
-	    } else if (showgraphicsoptions) {
-		for(i=0;i<2;i++) {
+	    }
+	} else if (showgraphicsoptions) 
+	{
+	    for(i=0;i<2;i++) 
+	    {
                 SDL_Rect destination;
 		destination.x = 100;
-                destination.y = 40+(15*i);
-	        destination.w = 100; 
-	        destination.h = 50;
+               	destination.y = 40+(15*i);
+	       	destination.w = 100; 
+	       	destination.h = 50;
 		textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_graphicsoptionslist[i], text_color);
-	       	SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
-		}
+		SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+	    }
+	}
+	
 //TODO other menu's go here
-	    /* Tidy up */
-	    SDL_FreeSurface(textSurface);
-            TTF_CloseFont (ttffont);
 
 //TODO Highlight current position, add on/off depending on variables.
 
 	    /* Update display */
-	    SDL_Rect dest;
-	    dest.w = 320;
-	    dest.h = 240;
-	    dest.x = 0;
-	    dest.y = 0;
-	    SDL_BlitSurface(menuSurface, NULL, sdl_video.surf_screen, &dest);
-	    SDL_Flip(sdl_video.surf_screen);
-//check for user input
-	    /* Check for user input */
-	    SDL_Event event;
-            if (SDL_PollEvent(&event)) {
-                switch(event.type) {
-	            case SDL_KEYDOWN: {
-		    }
-        	    case SDL_KEYUP: {
-		    }
-		}
+	SDL_Rect dest;
+	dest.w = 320;
+	dest.h = 240;
+	dest.x = 0;
+	dest.y = 0;
+	SDL_BlitSurface(menuSurface, NULL, sdl_video.surf_screen, &dest);
+	SDL_Flip(sdl_video.surf_screen);
+
+        /* Check for user input */
+        SDL_Event event;
+	int keypressed = 0;
+        while(SDL_PollEvent(&event)) {
+            switch(event.type) { /* Process the appropriate event type */
+                case SDL_KEYDOWN:  /* Handle a KEYDOWN event */
+                keypressed = sdl_control_update(event.key.keysym.sym);
+                break;
+                default: /* Report an unhandled event */
+                    printf("I don't know what this event is!\n");
 	    }
+	}
+	uint8 *keystate2 = SDL_GetKeyState(NULL);
+        if(keystate2[SDLK_DOWN]) {
+	    selectedoption++;
+	    if (selectedoption>7)
+	        selectedoption=0;
+            SDL_Delay(170);
+	}
+        if(keystate2[SDLK_UP]) {
+	    if (!selectedoption)
+	        selectedoption = 7;
+	    else
+	        selectedoption--;
+	    SDL_Delay(100);
+	}
+	if(keystate2[SDLK_LCTRL]) {
+break;
+	}
+
+	SDL_FreeSurface(textSurface);
+        TTF_CloseFont (ttffont);
+
 //change variables
-	}//done
+    }//done
 
 
 //but for now we'll just toggle fullscreen
@@ -712,7 +715,9 @@ static int gcw0menu(void)
         #endif
     }
 */
-    }
+//    }
+	    /* Tidy up */
+
     bitmap.viewport.changed=1; //change screen res if required
 
     return 1;
