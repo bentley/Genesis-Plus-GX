@@ -12,8 +12,17 @@
 #include "md_ntsc.h"
 #include "utils.h"
 
-#define SOUND_FREQUENCY 48000
-#define SOUND_SAMPLES_SIZE  2048
+#ifdef GCWZERO
+#include <SDL_ttf.h>
+#include <SDL_image.h>
+static int gcw0menu_fullscreen;
+static int gcw0_w;
+static int gcw0_h;
+#endif
+
+//DK no difference? Might as well save some cycles. #define SOUND_FREQUENCY 48000
+#define SOUND_FREQUENCY    44100
+#define SOUND_SAMPLES_SIZE 2048
 
 #define VIDEO_WIDTH  320
 #define VIDEO_HEIGHT 240
@@ -124,7 +133,7 @@ static void sdl_sound_update(enabled)
 
         SDL_LockAudio();
         out = (short*)sdl_sound.current_pos;
-        for(i = 0; i < size; i++)
+        for(i = 0; i < size; i++) 
         {
             *out++ = soundframe[i];
         }
@@ -162,12 +171,16 @@ static int sdl_video_init()
         MessageBox(NULL, "SDL Video initialization failed", "Error", 0);
         return 0;
     }
+#ifdef GCWZERO
+    sdl_video.surf_screen  = SDL_SetVideoMode(VIDEO_WIDTH, VIDEO_HEIGHT, 16, SDL_HWSURFACE |  
+#else
     sdl_video.surf_screen  = SDL_SetVideoMode(VIDEO_WIDTH, VIDEO_HEIGHT, 16, SDL_HWSURFACE | fullscreen | 
-	#ifdef SDL_TRIPLEBUF
-		SDL_TRIPLEBUF
-	#else
-		SDL_DOUBLEBUF
-	#endif
+#endif
+#ifdef SDL_TRIPLEBUF
+    SDL_TRIPLEBUF
+#else
+    SDL_DOUBLEBUF
+#endif
     );
     sdl_video.surf_bitmap = SDL_CreateRGBSurface(SDL_HWSURFACE, 720, 576, 16, 0, 0, 0, 0);
     sdl_video.frames_rendered = 0;
@@ -214,12 +227,17 @@ static void sdl_video_update()
         /* destination bitmap */
         sdl_video.drect.w = sdl_video.srect.w;
         sdl_video.drect.h = sdl_video.srect.h;
-        sdl_video.drect.x = (VIDEO_WIDTH - sdl_video.drect.w) / 2;
+        sdl_video.drect.x = (VIDEO_WIDTH  - sdl_video.drect.w) / 2;
         sdl_video.drect.y = (VIDEO_HEIGHT - sdl_video.drect.h) / 2;
 
         /* clear destination surface */
         SDL_FillRect(sdl_video.surf_screen, 0, 0);
-
+#ifdef GCWZERO //triple buffering so stop flicker
+	SDL_Flip(sdl_video.surf_screen);
+        SDL_FillRect(sdl_video.surf_screen, 0, 0);
+	SDL_Flip(sdl_video.surf_screen);
+        SDL_FillRect(sdl_video.surf_screen, 0, 0);
+#endif
 #if 0
         if (config.render && (interlaced || config.ntsc))  rect.h *= 2;
         if (config.ntsc) rect.w = (reg[12]&1) ? MD_NTSC_OUT_WIDTH(rect.w) : SMS_NTSC_OUT_WIDTH(rect.w);
@@ -261,10 +279,36 @@ static void sdl_video_update()
 #endif
     }
 
+//DK IPU scaling for gg/sms roms
+#ifdef GCWZERO
+    if (gcw0menu_fullscreen) {
+        if( (gcw0_w != sdl_video.drect.w) || (gcw0_h != sdl_video.drect.h) ) {
+            sdl_video.drect.w = sdl_video.srect.w;
+            sdl_video.drect.h = sdl_video.srect.h;
+            sdl_video.drect.x = 0;
+            sdl_video.drect.y = 0;
+            gcw0_w=sdl_video.drect.w;
+            gcw0_h=sdl_video.drect.h;
+
+            sdl_video.surf_screen  = SDL_SetVideoMode(gcw0_w,gcw0_h, 16, SDL_HWSURFACE |  
+            #ifdef SDL_TRIPLEBUF
+            SDL_TRIPLEBUF);
+            #else
+            SDL_DOUBLEBUF);
+            #endif
+        }
+    }
+#endif
+
     SDL_BlitSurface(sdl_video.surf_bitmap, &sdl_video.srect, sdl_video.surf_screen, &sdl_video.drect);
     //SDL_UpdateRect(sdl_video.surf_screen, 0, 0, 0, 0);
-    SDL_Flip(sdl_video.surf_screen);
 
+//DK frameskip testing, uncomment below to set to 30fps flipped (virtual racing tests)
+//static int eo;
+//if(eo){
+    SDL_Flip(sdl_video.surf_screen);
+//eo--;}
+//else eo++;
     ++sdl_video.frames_rendered;
 }
 
@@ -508,12 +552,13 @@ static int sdl_control_update(SDLKey keystate)
         break;
     }
 
-#ifndef GCW0
     case SDLK_ESCAPE:
     {
+#ifndef GCWZERO
+	/* exit */
         return 0;
-    }
 #endif
+    }
 
     default:
         break;
@@ -521,6 +566,348 @@ static int sdl_control_update(SDLKey keystate)
 
     return 1;
 }
+
+static void shutdown() {
+	FILE *fp;
+	crc = crc32(0, cart.rom, cart.romsize);
+	
+	//TODO: verify SCD backup room dir and files
+    if (system_hw == SYSTEM_MCD)
+    {
+        /* save internal backup RAM (if formatted) */
+        if (!memcmp(scd.bram + 0x2000 - 0x20, brm_format + 0x20, 0x20))
+        {
+            fp = fopen("./scd.brm", "wb");
+            if (fp!=NULL)
+            {
+                fwrite(scd.bram, 0x2000, 1, fp);
+                fclose(fp);
+            }
+        }
+
+        /* save cartridge backup RAM (if formatted) */
+        if (scd.cartridge.id)
+        {
+            if (!memcmp(scd.cartridge.area + scd.cartridge.mask + 1 - 0x20, brm_format + 0x20, 0x20))
+            {
+                fp = fopen("./cart.brm", "wb");
+                if (fp!=NULL)
+                {
+                    fwrite(scd.cartridge.area, scd.cartridge.mask + 1, 1, fp);
+                    fclose(fp);
+                }
+            }
+        }
+    }
+
+    if (sram.on)
+    {
+        /* save SRAM */
+        char save_file[256];
+        sprintf(save_file,"%s/%X.srm", get_save_directory(), crc);
+        fp = fopen(save_file, "wb");
+        if (fp!=NULL)
+        {
+            fwrite(sram.sram,0x10000,1, fp);
+            fclose(fp);
+        }
+    }
+    audio_shutdown();
+    error_shutdown();
+
+    sdl_video_close();
+    sdl_sound_close();
+    sdl_sync_close();
+    SDL_Quit();
+}
+
+#ifdef GCWZERO //menu!
+static int gcw0menu(void)
+{
+    /* display menu */
+//  change video mode
+    sdl_video.surf_screen  = SDL_SetVideoMode(320,240, 16, SDL_HWSURFACE |  
+    #ifdef SDL_TRIPLEBUF
+    SDL_TRIPLEBUF);
+    #else
+    SDL_DOUBLEBUF);
+    #endif
+//  blank screen
+    SDL_FillRect(sdl_video.surf_screen, 0, 0);
+//  set up menu surface
+    SDL_Surface *menuSurface = NULL;
+    menuSurface = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 16, 0, 0, 0, 0);
+
+    int showmainmenu          = 1;
+    int showgraphicsoptions   = 0;
+    const char *gcw0menu_graphicsoptionslist[8]={
+        "Scaling",
+        "Keep aspect ratio",
+    };
+    const char *gcw0menu_onofflist[2]={
+        "On",
+        "Off",
+    };
+//  start menu loop - default = display main menu
+    int done;
+    bitmap.viewport.changed=1; //change screen res if required
+    while(!done) 
+    {
+
+//TODO 	identify system we are using to show correct background just cos we can :P
+/*        if (system_hw == SYSTEM_MCD) { //Mega CD
+	} else 
+	if ( (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) ) { //Sega Master System
+	} else
+	if (system_hw == SYSTEM_MD) { //Sega Megadrive
+	} else
+	if ( (system_hw == SYSTEM_GG) || (system_hw == SYSTEM_GGMS) ) { //Game Gear
+	} else*/
+if      (  system_hw == SYSTEM_PICO) //Sega Pico
+{
+        SDL_Surface *tempbgSurface;
+        SDL_Surface *bgSurface;
+	tempbgSurface = IMG_Load( "./SMS.png" );
+	bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	SDL_FreeSurface(tempbgSurface);
+	SDL_FreeSurface(bgSurface);
+}
+else if ( (system_hw == SYSTEM_SG)      || (system_hw == SYSTEM_SGII) ) //SG-1000 I&II
+{
+        SDL_Surface *tempbgSurface;
+        SDL_Surface *bgSurface;
+	tempbgSurface = IMG_Load( "./SMS.png" );
+	bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	SDL_FreeSurface(tempbgSurface);
+	SDL_FreeSurface(bgSurface);
+}
+else if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) ) //Mark III & Sega Master System I&II & Megadrive with power base converter
+{
+        SDL_Surface *tempbgSurface;
+        SDL_Surface *bgSurface;
+	tempbgSurface = IMG_Load( "./SMS.png" );
+	bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	SDL_FreeSurface(tempbgSurface);
+	SDL_FreeSurface(bgSurface);
+}
+else if (  system_hw == SYSTEM_GG)   //Game gear
+{
+        SDL_Surface *tempbgSurface;
+        SDL_Surface *bgSurface;
+	tempbgSurface = IMG_Load( "./GG.png" );
+	bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	SDL_FreeSurface(tempbgSurface);
+	SDL_FreeSurface(bgSurface);
+}
+else if (  system_hw == SYSTEM_MD)   //Megadrive
+{
+        SDL_Surface *tempbgSurface;
+        SDL_Surface *bgSurface;
+	tempbgSurface = IMG_Load( "./MD.png" );
+	bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	SDL_FreeSurface(tempbgSurface);
+	SDL_FreeSurface(bgSurface);
+}
+else if (  system_hw == SYSTEM_MCD)  //MegaCD
+{
+        SDL_Surface *tempbgSurface;
+        SDL_Surface *bgSurface;
+	tempbgSurface = IMG_Load( "./MCD.png" );
+	bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	SDL_FreeSurface(tempbgSurface);
+	SDL_FreeSurface(bgSurface);
+}
+
+//      show menu
+	TTF_Init();
+        TTF_Font *ttffont = NULL;
+        SDL_Color text_color = {180, 180, 180};
+        SDL_Color selected_text_color = {23, 86, 155}; //selected colour = Sega blue ;)
+        SDL_Surface *textSurface;
+
+	int i;
+        static int selectedoption = 0;
+        const char *gcw0menu_mainlist[8]={
+            "Save state",
+    	    "Load state",
+	    "Graphics options",
+	    "Remap buttons",
+	    "Resume game",
+	    "", //spacer
+	    "Reset",
+	    "Quit"
+        };
+//Show title
+	ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
+        SDL_Rect destination;
+	    destination.x = 100;
+            destination.y = 40;
+	    destination.w = 100;
+	    destination.h = 50;
+        textSurface = TTF_RenderText_Solid(ttffont, "Genesis Plus GX", text_color);
+	SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+	SDL_FreeSurface(textSurface);
+        TTF_CloseFont (ttffont);
+
+	if (showmainmenu) 
+        {
+	    for(i=0;i<8;i++) 
+	    {
+		ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
+        	SDL_Rect destination;
+	        destination.x = 100;
+             	destination.y = 70+(15*i);
+	        destination.w = 100;
+	        destination.h = 50;
+		if (i == selectedoption)
+		    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_mainlist[i], selected_text_color);
+		else
+	            textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_mainlist[i], text_color);
+	      	SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+		SDL_FreeSurface(textSurface);
+        	TTF_CloseFont (ttffont);
+	    }
+	} else if (showgraphicsoptions) 
+	{
+	    for(i=0;i<2;i++) 
+	    {
+		ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
+                SDL_Rect destination;
+		destination.x = 100;
+               	destination.y = 40+(15*i);
+	       	destination.w = 100; 
+	       	destination.h = 50;
+		textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_graphicsoptionslist[i], text_color);
+		SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+		SDL_FreeSurface(textSurface);
+        	TTF_CloseFont (ttffont);
+	    }
+	}
+
+//TODO other menu's go here
+
+//TODO add on/off depending on variables.
+
+	    /* Update display */
+	SDL_Rect dest;
+	dest.w = 320;
+	dest.h = 240;
+	dest.x = 0;
+	dest.y = 0;
+	SDL_BlitSurface(menuSurface, NULL, sdl_video.surf_screen, &dest);
+	SDL_Flip(sdl_video.surf_screen);
+
+        /* Check for user input */
+        SDL_Event event;
+        while(SDL_PollEvent(&event)) {
+            switch(event.type) {
+                case SDL_KEYDOWN:
+		    sdl_control_update(event.key.keysym.sym);
+                    break;
+                default:
+		    break;
+	    }
+	}
+	uint8 *keystate2 = SDL_GetKeyState(NULL);
+        if(keystate2[SDLK_DOWN]) {
+	    selectedoption++;
+	    if (selectedoption == 5) selectedoption = 6;
+	    if (selectedoption>7)
+	        selectedoption=0;
+            SDL_Delay(170);
+	}
+        if(keystate2[SDLK_UP]) {
+	    if (!selectedoption)
+	        selectedoption = 7;
+	    else
+	        selectedoption--;
+	    if (selectedoption == 5) selectedoption = 4;
+	    SDL_Delay(170);
+	}
+//	if(keystate2[SDLK_LALT]) {
+//	    break;
+//	}
+	if(keystate2[SDLK_LCTRL]) {
+	    if (selectedoption == 0) { //Save
+		char save_state_file[256];
+		sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc);
+		FILE *f = fopen(save_state_file,"wb");
+		if (f)
+		{
+		    uint8 buf[STATE_SIZE];
+		    int len = state_save(buf);
+		    fwrite(&buf, len, 1, f);
+		    fclose(f);
+		}
+	        SDL_Delay(170);
+		break;
+	    }
+	    if (selectedoption == 1) { //Load
+		char save_state_file[256];
+		sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc );
+		FILE *f = fopen(save_state_file,"rb");
+		if (f)
+		{
+		    uint8 buf[STATE_SIZE];
+		    fread(&buf, STATE_SIZE, 1, f);
+		    state_load(buf);
+		    fclose(f);
+		}
+		selectedoption=0;
+	        SDL_Delay(170);
+		break;
+	    }
+	    if (selectedoption == 2) { //Graphics
+		gcw0menu_fullscreen = !gcw0menu_fullscreen;//toggle
+		if(!gcw0menu_fullscreen) {
+		    gcw0_w=320;
+		    gcw0_h=240;
+		    sdl_video.surf_screen  = SDL_SetVideoMode(gcw0_w,gcw0_h, 16, SDL_HWSURFACE |  
+		    #ifdef SDL_TRIPLEBUF
+		    SDL_TRIPLEBUF);
+		    #else
+		    SDL_DOUBLEBUF);
+	            #endif
+	        }
+		selectedoption=0;
+	        SDL_Delay(170);
+	        break;
+	    }
+	    if (selectedoption == 3) { //Remap
+//TODO
+		selectedoption=0;
+	    }
+	    if (selectedoption == 4) { //Resume
+		selectedoption=0;
+	        SDL_Delay(170);
+	        break;
+	    }
+	    if (selectedoption == 6) { //Reset
+//TODO
+		selectedoption=0;
+	        system_reset();
+	        SDL_Delay(170);
+		break;
+	    }
+	    if (selectedoption == 7) { //Quit
+//TODO
+		shutdown();
+	        SDL_Delay(170);
+	        break;
+	    }
+	}
+//change variables
+    }//done
+
+    return 1;
+}
+#endif
 
 int sdl_input_update(void)
 {
@@ -709,47 +1096,18 @@ int sdl_input_update(void)
     default:
     {
 #ifdef GCWZERO
-        if(keystate[SDLK_LSHIFT])  input.pad[joynum] |= INPUT_A;//x
-        if(keystate[SDLK_LALT])  input.pad[joynum] |= INPUT_B;//b
-        if(keystate[SDLK_LCTRL])  input.pad[joynum] |= INPUT_C;//a
-        if(keystate[SDLK_RETURN])  input.pad[joynum] |= INPUT_START;
-        if(keystate[SDLK_TAB])  input.pad[joynum] |= INPUT_X;//l
-        if(keystate[SDLK_SPACE])  input.pad[joynum] |= INPUT_Y; //y
-        if(keystate[SDLK_BACKSPACE])  input.pad[joynum] |= INPUT_Z; //r
-        
-        
-        if (keystate[SDLK_ESCAPE] && keystate[SDLK_TAB]) { //SELECT + L
-			/* savestate */
-			char save_state_file[256];
-			sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc);
-			FILE *f = fopen(save_state_file,"wb");
-			if (f)
-			{
-				uint8 buf[STATE_SIZE];
-				int len = state_save(buf);
-				fwrite(&buf, len, 1, f);
-				fclose(f);
-			}
-		}
-		
-		if (keystate[SDLK_ESCAPE] && keystate[SDLK_BACKSPACE]) { //SELECT + R
-			/* loadstate */
-			char save_state_file[256];
-			sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc );
-			FILE *f = fopen(save_state_file,"rb");
-			if (f)
-			{
-				uint8 buf[STATE_SIZE];
-				fread(&buf, STATE_SIZE, 1, f);
-				state_load(buf);
-				fclose(f);
-			}
-		}
-		
-		if (keystate[SDLK_ESCAPE] && keystate[SDLK_RETURN]) { //START + SELECT
-			/* exit */
-			return 0;
-		}
+        if(keystate[SDLK_LSHIFT])    input.pad[joynum] |= INPUT_A;//x
+        if(keystate[SDLK_LALT])      input.pad[joynum] |= INPUT_B;//b
+        if(keystate[SDLK_LCTRL])     input.pad[joynum] |= INPUT_C;//a
+        if(keystate[SDLK_RETURN])    input.pad[joynum] |= INPUT_START;
+        if(keystate[SDLK_TAB])       input.pad[joynum] |= INPUT_X;//l
+        if(keystate[SDLK_SPACE])     input.pad[joynum] |= INPUT_Y; //y
+        if(keystate[SDLK_BACKSPACE]) input.pad[joynum] |= INPUT_Z; //r
+
+//DK load/save better handled by menu?
+	if (keystate[SDLK_ESCAPE]) {
+	    gcw0menu();
+	}
 #else
         if(keystate[SDLK_a])  input.pad[joynum] |= INPUT_A;
         if(keystate[SDLK_s])  input.pad[joynum] |= INPUT_B;
@@ -762,10 +1120,10 @@ int sdl_input_update(void)
 #endif
 
 
-        if(keystate[SDLK_UP]) input.pad[joynum] |= INPUT_UP;
-        else if(keystate[SDLK_DOWN]) input.pad[joynum] |= INPUT_DOWN;
-        if(keystate[SDLK_LEFT]) input.pad[joynum] |= INPUT_LEFT;
-        else if(keystate[SDLK_RIGHT]) input.pad[joynum] |= INPUT_RIGHT;
+        if     (keystate[SDLK_UP]   )  input.pad[joynum] |= INPUT_UP;
+        else if(keystate[SDLK_DOWN] )  input.pad[joynum] |= INPUT_DOWN;
+        if     (keystate[SDLK_LEFT] )  input.pad[joynum] |= INPUT_LEFT;
+        else if(keystate[SDLK_RIGHT])  input.pad[joynum] |= INPUT_RIGHT;
 
         break;
     }
@@ -774,59 +1132,6 @@ int sdl_input_update(void)
 }
 
 
-static void shutdown() {
-	FILE *fp;
-	crc = crc32(0, cart.rom, cart.romsize);
-	
-	//TODO: verify SCD backup room dir and files
-    if (system_hw == SYSTEM_MCD)
-    {
-        /* save internal backup RAM (if formatted) */
-        if (!memcmp(scd.bram + 0x2000 - 0x20, brm_format + 0x20, 0x20))
-        {
-            fp = fopen("./scd.brm", "wb");
-            if (fp!=NULL)
-            {
-                fwrite(scd.bram, 0x2000, 1, fp);
-                fclose(fp);
-            }
-        }
-
-        /* save cartridge backup RAM (if formatted) */
-        if (scd.cartridge.id)
-        {
-            if (!memcmp(scd.cartridge.area + scd.cartridge.mask + 1 - 0x20, brm_format + 0x20, 0x20))
-            {
-                fp = fopen("./cart.brm", "wb");
-                if (fp!=NULL)
-                {
-                    fwrite(scd.cartridge.area, scd.cartridge.mask + 1, 1, fp);
-                    fclose(fp);
-                }
-            }
-        }
-    }
-
-    if (sram.on)
-    {
-        /* save SRAM */
-        char save_file[256];
-        sprintf(save_file,"%s/%X.srm", get_save_directory(), crc);
-        fp = fopen(save_file, "wb");
-        if (fp!=NULL)
-        {
-            fwrite(sram.sram,0x10000,1, fp);
-            fclose(fp);
-        }
-    }
-    audio_shutdown();
-    error_shutdown();
-
-    sdl_video_close();
-    sdl_sound_close();
-    sdl_sync_close();
-    SDL_Quit();
-}
 
 int main (int argc, char **argv)
 {
