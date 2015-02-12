@@ -566,6 +566,60 @@ static int sdl_control_update(SDLKey keystate)
     return 1;
 }
 
+static void shutdown() {
+	FILE *fp;
+	crc = crc32(0, cart.rom, cart.romsize);
+	
+	//TODO: verify SCD backup room dir and files
+    if (system_hw == SYSTEM_MCD)
+    {
+        /* save internal backup RAM (if formatted) */
+        if (!memcmp(scd.bram + 0x2000 - 0x20, brm_format + 0x20, 0x20))
+        {
+            fp = fopen("./scd.brm", "wb");
+            if (fp!=NULL)
+            {
+                fwrite(scd.bram, 0x2000, 1, fp);
+                fclose(fp);
+            }
+        }
+
+        /* save cartridge backup RAM (if formatted) */
+        if (scd.cartridge.id)
+        {
+            if (!memcmp(scd.cartridge.area + scd.cartridge.mask + 1 - 0x20, brm_format + 0x20, 0x20))
+            {
+                fp = fopen("./cart.brm", "wb");
+                if (fp!=NULL)
+                {
+                    fwrite(scd.cartridge.area, scd.cartridge.mask + 1, 1, fp);
+                    fclose(fp);
+                }
+            }
+        }
+    }
+
+    if (sram.on)
+    {
+        /* save SRAM */
+        char save_file[256];
+        sprintf(save_file,"%s/%X.srm", get_save_directory(), crc);
+        fp = fopen(save_file, "wb");
+        if (fp!=NULL)
+        {
+            fwrite(sram.sram,0x10000,1, fp);
+            fclose(fp);
+        }
+    }
+    audio_shutdown();
+    error_shutdown();
+
+    sdl_video_close();
+    sdl_sound_close();
+    sdl_sync_close();
+    SDL_Quit();
+}
+
 #ifdef GCWZERO //menu!
 static int gcw0menu(void)
 {
@@ -605,6 +659,7 @@ static int gcw0menu(void)
         "Off",
     };
     int done;
+    bitmap.viewport.changed=1; //change screen res if required
     while(!done) 
     {
 
@@ -658,7 +713,7 @@ static int gcw0menu(void)
 
 //TODO other menu's go here
 
-//TODO Highlight current position, add on/off depending on variables.
+//TODO add on/off depending on variables.
 
 	    /* Update display */
 	SDL_Rect dest;
@@ -671,19 +726,21 @@ static int gcw0menu(void)
 
         /* Check for user input */
         SDL_Event event;
-	int keypressed = 0;
+//	int keypressed = 0;
         while(SDL_PollEvent(&event)) {
-            switch(event.type) { /* Process the appropriate event type */
-                case SDL_KEYDOWN:  /* Handle a KEYDOWN event */
-                keypressed = sdl_control_update(event.key.keysym.sym);
-                break;
-                default: /* Report an unhandled event */
-                    printf("I don't know what this event is!\n");
+            switch(event.type) {
+                case SDL_KEYDOWN:
+//                    keypressed = 
+		    sdl_control_update(event.key.keysym.sym);
+                    break;
+                default:
+		    break;
 	    }
 	}
 	uint8 *keystate2 = SDL_GetKeyState(NULL);
         if(keystate2[SDLK_DOWN]) {
 	    selectedoption++;
+	    if (selectedoption == 5) selectedoption = 6;
 	    if (selectedoption>7)
 	        selectedoption=0;
             SDL_Delay(170);
@@ -693,76 +750,72 @@ static int gcw0menu(void)
 	        selectedoption = 7;
 	    else
 	        selectedoption--;
-	    SDL_Delay(100);
+	    if (selectedoption == 5) selectedoption = 4;
+	    SDL_Delay(170);
 	}
+//	if(keystate2[SDLK_LALT]) {
+//	    break;
+//	}
 	if(keystate2[SDLK_LCTRL]) {
 	    if (selectedoption == 0) { //Save
-		    char save_state_file[256];
-		    sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc);
-		    FILE *f = fopen(save_state_file,"wb");
-		    if (f)
-		    {
-			uint8 buf[STATE_SIZE];
-			int len = state_save(buf);
-			fwrite(&buf, len, 1, f);
-			fclose(f);
-		    }
-		    break;
+		char save_state_file[256];
+		sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc);
+		FILE *f = fopen(save_state_file,"wb");
+		if (f)
+		{
+		    uint8 buf[STATE_SIZE];
+		    int len = state_save(buf);
+		    fwrite(&buf, len, 1, f);
+		    fclose(f);
+		}
+		break;
 	    }
 	    if (selectedoption == 1) { //Load
-		    char save_state_file[256];
-		    sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc );
-		    FILE *f = fopen(save_state_file,"rb");
-		    if (f)
-		    {
-			uint8 buf[STATE_SIZE];
-			fread(&buf, STATE_SIZE, 1, f);
-			state_load(buf);
-			fclose(f);
-		    }
-		    break;
+		char save_state_file[256];
+		sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc );
+		FILE *f = fopen(save_state_file,"rb");
+		if (f)
+		{
+		    uint8 buf[STATE_SIZE];
+		    fread(&buf, STATE_SIZE, 1, f);
+		    state_load(buf);
+		    fclose(f);
+		}
+		break;
 	    }
 	    if (selectedoption == 2) { //Graphics
-		    gcw0menu_fullscreen = !gcw0menu_fullscreen;//toggle
-		    if(!gcw0menu_fullscreen) {
-		        gcw0_w=320;
-		        gcw0_h=240;
-		        sdl_video.surf_screen  = SDL_SetVideoMode(gcw0_w,gcw0_h, 16, SDL_HWSURFACE |  
-		        #ifdef SDL_TRIPLEBUF
-		        SDL_TRIPLEBUF);
-		        #else
-		        SDL_DOUBLEBUF);
-		        #endif
-		    }
-		    break;
+		gcw0menu_fullscreen = !gcw0menu_fullscreen;//toggle
+		if(!gcw0menu_fullscreen) {
+		    gcw0_w=320;
+		    gcw0_h=240;
+		    sdl_video.surf_screen  = SDL_SetVideoMode(gcw0_w,gcw0_h, 16, SDL_HWSURFACE |  
+		    #ifdef SDL_TRIPLEBUF
+		    SDL_TRIPLEBUF);
+		    #else
+		    SDL_DOUBLEBUF);
+	            #endif
+	        }
+	        break;
 	    }
 	    if (selectedoption == 3) { //Remap
 //TODO
 	    }
 	    if (selectedoption == 4) { //Resume
-	            break;
+	        break;
 	    }
 	    if (selectedoption == 6) { //Reset
+//TODO
+	        system_reset();
+		break;
 	    }
 	    if (selectedoption == 7) { //Quit
+//TODO
+		shutdown();
+	        break;
 	    }
-//	        case 7: //Quit
-//		    running = 0;
-//		    break;
-	    
 	}
-
 //change variables
     }//done
-
-
-//but for now we'll just toggle fullscreen
-/*
-*/
-//    }
-	    /* Tidy up */
-
-    bitmap.viewport.changed=1; //change screen res if required
 
     return 1;
 }
@@ -964,39 +1017,9 @@ int sdl_input_update(void)
         if(keystate[SDLK_BACKSPACE]) input.pad[joynum] |= INPUT_Z; //r
 
 //DK load/save better handled by menu?
-	if (keystate[SDLK_ESCAPE]) {// && keystate[SDLK_RETURN]) { //START + SELECT
-	    //DK lets go to the menu instead of exiting
+	if (keystate[SDLK_ESCAPE]) {
 	    gcw0menu();
 	}
-//DK disable the following for now, will be added to the menu
-/*        if (keystate[SDLK_ESCAPE] && keystate[SDLK_TAB]) { //SELECT + L
-*/		/* savestate */
-/*		char save_state_file[256];
-		sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc);
-		FILE *f = fopen(save_state_file,"wb");
-		if (f)
-		{
-			uint8 buf[STATE_SIZE];
-			int len = state_save(buf);
-			fwrite(&buf, len, 1, f);
-			fclose(f);
-		}
-	}
-		
-	if (keystate[SDLK_ESCAPE] && keystate[SDLK_BACKSPACE]) { //SELECT + R
-*/		/* loadstate */
-/*		char save_state_file[256];
-		sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc );
-		FILE *f = fopen(save_state_file,"rb");
-		if (f)
-		{
-			uint8 buf[STATE_SIZE];
-			fread(&buf, STATE_SIZE, 1, f);
-			state_load(buf);
-			fclose(f);
-		}
-	}
-*/		
 #else
         if(keystate[SDLK_a])  input.pad[joynum] |= INPUT_A;
         if(keystate[SDLK_s])  input.pad[joynum] |= INPUT_B;
@@ -1021,59 +1044,6 @@ int sdl_input_update(void)
 }
 
 
-static void shutdown() {
-	FILE *fp;
-	crc = crc32(0, cart.rom, cart.romsize);
-	
-	//TODO: verify SCD backup room dir and files
-    if (system_hw == SYSTEM_MCD)
-    {
-        /* save internal backup RAM (if formatted) */
-        if (!memcmp(scd.bram + 0x2000 - 0x20, brm_format + 0x20, 0x20))
-        {
-            fp = fopen("./scd.brm", "wb");
-            if (fp!=NULL)
-            {
-                fwrite(scd.bram, 0x2000, 1, fp);
-                fclose(fp);
-            }
-        }
-
-        /* save cartridge backup RAM (if formatted) */
-        if (scd.cartridge.id)
-        {
-            if (!memcmp(scd.cartridge.area + scd.cartridge.mask + 1 - 0x20, brm_format + 0x20, 0x20))
-            {
-                fp = fopen("./cart.brm", "wb");
-                if (fp!=NULL)
-                {
-                    fwrite(scd.cartridge.area, scd.cartridge.mask + 1, 1, fp);
-                    fclose(fp);
-                }
-            }
-        }
-    }
-
-    if (sram.on)
-    {
-        /* save SRAM */
-        char save_file[256];
-        sprintf(save_file,"%s/%X.srm", get_save_directory(), crc);
-        fp = fopen(save_file, "wb");
-        if (fp!=NULL)
-        {
-            fwrite(sram.sram,0x10000,1, fp);
-            fclose(fp);
-        }
-    }
-    audio_shutdown();
-    error_shutdown();
-
-    sdl_video_close();
-    sdl_sound_close();
-    sdl_sync_close();
-    SDL_Quit();
-}
 
 int main (int argc, char **argv)
 {
