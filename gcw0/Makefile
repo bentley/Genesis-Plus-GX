@@ -32,7 +32,7 @@ DEFINES   = -DLSB_FIRST -DUSE_16BPP_RENDERING -DUSE_LIBTREMOR -DGCWZERO -DALIGN_
 
 SRCDIR    = ../core
 INCLUDES  = -I$(SRCDIR) -I$(SRCDIR)/z80 -I$(SRCDIR)/m68k -I$(SRCDIR)/sound -I$(SRCDIR)/input_hw -I$(SRCDIR)/cart_hw -I$(SRCDIR)/cart_hw/svp -I$(SRCDIR)/cd_hw -I$(SRCDIR)/ntsc -I$(SRCDIR)/tremor -I$(SRCDIR)/../gcw0
-LIBS	  = `$(SDL-CONFIG) --libs --libs` -lz -lm -lSDL_ttf
+LIBS	  = `$(SDL-CONFIG) --libs --libs` -lz -lm -lSDL_ttf -lSDL_image
 
 OBJDIR = ./build_gcw0
 

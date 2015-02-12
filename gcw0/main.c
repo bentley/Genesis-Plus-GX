@@ -14,6 +14,7 @@
 
 #ifdef GCWZERO
 #include <SDL_ttf.h>
+#include <SDL_image.h>
 static int gcw0menu_fullscreen;
 static int gcw0_w;
 static int gcw0_h;
@@ -637,19 +638,8 @@ static int gcw0menu(void)
     SDL_Surface *menuSurface = NULL;
     menuSurface = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 16, 0, 0, 0, 0);
 
-//  start menu loop - default = display main menu
     int showmainmenu          = 1;
     int showgraphicsoptions   = 0;
-    const char *gcw0menu_mainlist[8]={
-        "Save state",
-	"Load state",
-	"Graphics options",
-	"Remap buttons",
-	"Resume game",
-	"", //spacer
-	"Reset",
-	"Quit"
-    };
     const char *gcw0menu_graphicsoptionslist[8]={
         "Scaling",
         "Keep aspect ratio",
@@ -658,23 +648,112 @@ static int gcw0menu(void)
         "On",
         "Off",
     };
+//  start menu loop - default = display main menu
     int done;
     bitmap.viewport.changed=1; //change screen res if required
     while(!done) 
     {
 
 //TODO 	identify system we are using to show correct background just cos we can :P
-//TODO	show background first but we have no image - requested on Dingoonity
+/*        if (system_hw == SYSTEM_MCD) { //Mega CD
+	} else 
+	if ( (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) ) { //Sega Master System
+	} else
+	if (system_hw == SYSTEM_MD) { //Sega Megadrive
+	} else
+	if ( (system_hw == SYSTEM_GG) || (system_hw == SYSTEM_GGMS) ) { //Game Gear
+	} else*/
+if      (  system_hw == SYSTEM_PICO) //Sega Pico
+{
+        SDL_Surface *tempbgSurface;
+        SDL_Surface *bgSurface;
+	tempbgSurface = IMG_Load( "./SMS.png" );
+	bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	SDL_FreeSurface(tempbgSurface);
+	SDL_FreeSurface(bgSurface);
+}
+else if ( (system_hw == SYSTEM_SG)      || (system_hw == SYSTEM_SGII) ) //SG-1000 I&II
+{
+        SDL_Surface *tempbgSurface;
+        SDL_Surface *bgSurface;
+	tempbgSurface = IMG_Load( "./SMS.png" );
+	bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	SDL_FreeSurface(tempbgSurface);
+	SDL_FreeSurface(bgSurface);
+}
+else if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) ) //Mark III & Sega Master System I&II & Megadrive with power base converter
+{
+        SDL_Surface *tempbgSurface;
+        SDL_Surface *bgSurface;
+	tempbgSurface = IMG_Load( "./SMS.png" );
+	bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	SDL_FreeSurface(tempbgSurface);
+	SDL_FreeSurface(bgSurface);
+}
+else if (  system_hw == SYSTEM_GG)   //Game gear
+{
+        SDL_Surface *tempbgSurface;
+        SDL_Surface *bgSurface;
+	tempbgSurface = IMG_Load( "./GG.png" );
+	bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	SDL_FreeSurface(tempbgSurface);
+	SDL_FreeSurface(bgSurface);
+}
+else if (  system_hw == SYSTEM_MD)   //Megadrive
+{
+        SDL_Surface *tempbgSurface;
+        SDL_Surface *bgSurface;
+	tempbgSurface = IMG_Load( "./MD.png" );
+	bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	SDL_FreeSurface(tempbgSurface);
+	SDL_FreeSurface(bgSurface);
+}
+else if (  system_hw == SYSTEM_MCD)  //MegaCD
+{
+        SDL_Surface *tempbgSurface;
+        SDL_Surface *bgSurface;
+	tempbgSurface = IMG_Load( "./MCD.png" );
+	bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	SDL_FreeSurface(tempbgSurface);
+	SDL_FreeSurface(bgSurface);
+}
 
 //      show menu
 	TTF_Init();
         TTF_Font *ttffont = NULL;
-        SDL_Color text_color = {128, 128, 128};
+        SDL_Color text_color = {180, 180, 180};
         SDL_Color selected_text_color = {23, 86, 155}; //selected colour = Sega blue ;)
         SDL_Surface *textSurface;
 
 	int i;
         static int selectedoption = 0;
+        const char *gcw0menu_mainlist[8]={
+            "Save state",
+    	    "Load state",
+	    "Graphics options",
+	    "Remap buttons",
+	    "Resume game",
+	    "", //spacer
+	    "Reset",
+	    "Quit"
+        };
+//Show title
+	ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
+        SDL_Rect destination;
+	    destination.x = 100;
+            destination.y = 40;
+	    destination.w = 100;
+	    destination.h = 50;
+        textSurface = TTF_RenderText_Solid(ttffont, "Genesis Plus GX", text_color);
+	SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+	SDL_FreeSurface(textSurface);
+        TTF_CloseFont (ttffont);
 
 	if (showmainmenu) 
         {
@@ -683,7 +762,7 @@ static int gcw0menu(void)
 		ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
         	SDL_Rect destination;
 	        destination.x = 100;
-             	destination.y = 40+(15*i);
+             	destination.y = 70+(15*i);
 	        destination.w = 100;
 	        destination.h = 50;
 		if (i == selectedoption)
@@ -726,11 +805,9 @@ static int gcw0menu(void)
 
         /* Check for user input */
         SDL_Event event;
-//	int keypressed = 0;
         while(SDL_PollEvent(&event)) {
             switch(event.type) {
                 case SDL_KEYDOWN:
-//                    keypressed = 
 		    sdl_control_update(event.key.keysym.sym);
                     break;
                 default:
@@ -768,6 +845,7 @@ static int gcw0menu(void)
 		    fwrite(&buf, len, 1, f);
 		    fclose(f);
 		}
+	        SDL_Delay(170);
 		break;
 	    }
 	    if (selectedoption == 1) { //Load
@@ -781,6 +859,8 @@ static int gcw0menu(void)
 		    state_load(buf);
 		    fclose(f);
 		}
+		selectedoption=0;
+	        SDL_Delay(170);
 		break;
 	    }
 	    if (selectedoption == 2) { //Graphics
@@ -795,22 +875,30 @@ static int gcw0menu(void)
 		    SDL_DOUBLEBUF);
 	            #endif
 	        }
+		selectedoption=0;
+	        SDL_Delay(170);
 	        break;
 	    }
 	    if (selectedoption == 3) { //Remap
 //TODO
+		selectedoption=0;
 	    }
 	    if (selectedoption == 4) { //Resume
+		selectedoption=0;
+	        SDL_Delay(170);
 	        break;
 	    }
 	    if (selectedoption == 6) { //Reset
 //TODO
+		selectedoption=0;
 	        system_reset();
+	        SDL_Delay(170);
 		break;
 	    }
 	    if (selectedoption == 7) { //Quit
 //TODO
 		shutdown();
+	        SDL_Delay(170);
 	        break;
 	    }
 	}
