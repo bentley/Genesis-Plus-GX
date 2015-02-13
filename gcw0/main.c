@@ -889,7 +889,7 @@ static int gcw0menu(void)
 	    }
 	    if (selectedoption == 7) { //Quit
 //TODO
-		shutdown();
+			exit(0);
 	        SDL_Delay(170);
 	        break;
 	    }
