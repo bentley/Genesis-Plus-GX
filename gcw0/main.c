@@ -15,7 +15,6 @@
 #ifdef GCWZERO
 #include <SDL_ttf.h>
 #include <SDL_image.h>
-static int gcw0menu_fullscreen=1;
 static int gcw0_w;
 static int gcw0_h;
 #endif
@@ -281,7 +280,7 @@ static void sdl_video_update()
 
 //DK IPU scaling for gg/sms roms
 #ifdef GCWZERO
-    if (gcw0menu_fullscreen) {
+    if (config.gcw0_fullscreen) {
         if( (gcw0_w != sdl_video.drect.w) || (gcw0_h != sdl_video.drect.h) ) {
             sdl_video.drect.w = sdl_video.srect.w;
             sdl_video.drect.h = sdl_video.srect.h;
@@ -856,8 +855,8 @@ static int gcw0menu(void)
 		break;
 	    }
 	    if (selectedoption == 2) { //Graphics
-		gcw0menu_fullscreen = !gcw0menu_fullscreen;//toggle
-		if(!gcw0menu_fullscreen) {
+		config.gcw0_fullscreen = !config.gcw0_fullscreen;//toggle
+		if(!config.gcw0_fullscreen) {
 		    gcw0_w=320;
 		    gcw0_h=240;
 		    sdl_video.surf_screen  = SDL_SetVideoMode(gcw0_w,gcw0_h, 16, SDL_HWSURFACE |  
@@ -867,7 +866,8 @@ static int gcw0menu(void)
 		    SDL_DOUBLEBUF);
 	            #endif
 	        }
-		selectedoption=0;
+			selectedoption=0;
+			config_save();
 	        SDL_Delay(170);
 	        break;
 	    }
@@ -1140,11 +1140,10 @@ int main (int argc, char **argv)
         exit(1);
     }
 
-    /* set default config */
     error_init();
     create_default_directories();
+    /* set default config */
     set_config_defaults();
-
 
     /* mark all BIOS as unloaded */
     system_bios = 0;

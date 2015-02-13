@@ -3,6 +3,8 @@
 #define _CONFIG_H_
 
 #include <pwd.h>
+
+#define CONFIG_VERSION "GENPLUS-GX 1.7.5"
 /****************************************************************************
  * Config Option
  *
@@ -14,6 +16,8 @@ typedef struct
 
 typedef struct
 {
+  char version[16];
+  uint8 gcw0_fullscreen;
   uint8 hq_fm;
   uint8 filter;
   uint8 psgBoostNoise;

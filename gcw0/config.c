@@ -2,11 +2,54 @@
 
 t_config config;
 
+static int config_load(void)
+{
+	//TODO: extract to function
+	const char *homedir;
+    if ((homedir = getenv("HOME")) == NULL) {
+        homedir = getpwuid(getuid())->pw_dir;
+    }
+    
+	/* open configuration file */
+	char fname[MAXPATHLEN];
+    sprintf (fname, "%s%s/config.ini", homedir, DEFAULT_PATH);
+	FILE *fp = fopen(fname, "rb");
+	if (fp)
+	{
+		/* check file size */
+		fseek(fp, 0, SEEK_END);
+		if (ftell(fp) != sizeof(config))
+		{
+			fclose(fp);
+			return 0;
+		}
+
+		/* check version */
+		char version[16];
+		fseek(fp, 0, SEEK_SET);
+		fread(version, 16, 1, fp);
+		if (memcmp(version,CONFIG_VERSION,16))
+		{
+			fclose(fp);
+			return 0;
+		}
+
+		/* read file */
+		fseek(fp, 0, SEEK_SET);
+		fread(&config, sizeof(config), 1, fp);
+		fclose(fp);
+		return 1;
+	}
+				
+	return 0;
+}
+
 
 void set_config_defaults(void)
 {
     int i;
-
+    /* version TAG */
+    strncpy(config.version,CONFIG_VERSION,16);
     /* sound options */
     config.psg_preamp     = 150;
     config.fm_preamp      = 100;
@@ -39,6 +82,7 @@ void set_config_defaults(void)
     config.overscan = 0;       /* 3 = all borders (0 = no borders , 1 = vertical borders only, 2 = horizontal borders only) */
     config.gg_extra = 0;       /* 1 = show extended Game Gear screen (256x192) */
     config.render   = 0;       /* 1 = double resolution output (only when interlaced mode 2 is enabled) */
+    config.gcw0_fullscreen = 1; /* 1 use IPU scalling */
 
     /* controllers options */
     input.system[0]       = SYSTEM_GAMEPAD;
@@ -51,11 +95,19 @@ void set_config_defaults(void)
         /* autodetected control pad type */
         config.input[i].padtype = DEVICE_PAD2B | DEVICE_PAD3B | DEVICE_PAD6B;
     }
+    
+    
+    /* try to restore user config */
+	int loaded = config_load();
+	if (!loaded) {
+		printf("Default Settings restored\n");
+	}
 }
 
 
 void config_save(void)
 {
+	//TODO: extract to function
     const char *homedir;
     if ((homedir = getenv("HOME")) == NULL) {
         homedir = getpwuid(getuid())->pw_dir;
@@ -73,3 +125,4 @@ void config_save(void)
         fclose(fp);
     }
 }
+
