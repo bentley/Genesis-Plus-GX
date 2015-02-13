@@ -1088,13 +1088,14 @@ int sdl_input_update(void)
     default:
     {
 #ifdef GCWZERO
-        if(keystate[SDLK_LSHIFT])    input.pad[joynum] |= INPUT_A;//x
-        if(keystate[SDLK_LALT])      input.pad[joynum] |= INPUT_B;//b
-        if(keystate[SDLK_LCTRL])     input.pad[joynum] |= INPUT_C;//a
-        if(keystate[SDLK_RETURN])    input.pad[joynum] |= INPUT_START;
-        if(keystate[SDLK_TAB])       input.pad[joynum] |= INPUT_X;//l
-        if(keystate[SDLK_SPACE])     input.pad[joynum] |= INPUT_Y; //y
-        if(keystate[SDLK_BACKSPACE]) input.pad[joynum] |= INPUT_Z; //r
+        if(keystate[config.button_a])    	input.pad[joynum] |= INPUT_A;
+        if(keystate[config.button_b])      	input.pad[joynum] |= INPUT_B;
+        if(keystate[config.button_c])     	input.pad[joynum] |= INPUT_C;
+        if(keystate[config.button_start])  	input.pad[joynum] |= INPUT_START;
+        if(keystate[config.button_x])      	input.pad[joynum] |= INPUT_X;
+        if(keystate[config.button_y])     	input.pad[joynum] |= INPUT_Y;
+        if(keystate[config.button_z]) 		input.pad[joynum] |= INPUT_Z;
+        if(keystate[config.button_mode])  	input.pad[joynum] |= INPUT_MODE;
 
 //DK load/save better handled by menu?
 	if (keystate[SDLK_ESCAPE]) {
