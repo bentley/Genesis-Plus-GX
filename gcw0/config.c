@@ -24,16 +24,6 @@ static int config_load(void)
 			return 0;
 		}
 
-		/* check version */
-		char version[16];
-		fseek(fp, 0, SEEK_SET);
-		fread(version, 16, 1, fp);
-		if (memcmp(version,CONFIG_VERSION,16))
-		{
-			fclose(fp);
-			return 0;
-		}
-
 		/* read file */
 		fseek(fp, 0, SEEK_SET);
 		fread(&config, sizeof(config), 1, fp);
@@ -48,8 +38,6 @@ static int config_load(void)
 void set_config_defaults(void)
 {
     int i;
-    /* version TAG */
-    strncpy(config.version,CONFIG_VERSION,16);
     /* sound options */
     config.psg_preamp     = 150;
     config.fm_preamp      = 100;
