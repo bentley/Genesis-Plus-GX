@@ -15,7 +15,7 @@
 #ifdef GCWZERO
 #include <SDL_ttf.h>
 #include <SDL_image.h>
-static int gcw0menu_fullscreen;
+static int gcw0menu_fullscreen=1;
 static int gcw0_w;
 static int gcw0_h;
 #endif
@@ -654,75 +654,67 @@ static int gcw0menu(void)
     while(!done) 
     {
 
-//TODO 	identify system we are using to show correct background just cos we can :P
-/*        if (system_hw == SYSTEM_MCD) { //Mega CD
-	} else 
-	if ( (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) ) { //Sega Master System
-	} else
-	if (system_hw == SYSTEM_MD) { //Sega Megadrive
-	} else
-	if ( (system_hw == SYSTEM_GG) || (system_hw == SYSTEM_GGMS) ) { //Game Gear
-	} else*/
-if      (  system_hw == SYSTEM_PICO) //Sega Pico
-{
-        SDL_Surface *tempbgSurface;
-        SDL_Surface *bgSurface;
-	tempbgSurface = IMG_Load( "./SMS.png" );
-	bgSurface = SDL_DisplayFormat( tempbgSurface );
-      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
-	SDL_FreeSurface(tempbgSurface);
-	SDL_FreeSurface(bgSurface);
-}
-else if ( (system_hw == SYSTEM_SG)      || (system_hw == SYSTEM_SGII) ) //SG-1000 I&II
-{
-        SDL_Surface *tempbgSurface;
-        SDL_Surface *bgSurface;
-	tempbgSurface = IMG_Load( "./SMS.png" );
-	bgSurface = SDL_DisplayFormat( tempbgSurface );
-      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
-	SDL_FreeSurface(tempbgSurface);
-	SDL_FreeSurface(bgSurface);
-}
-else if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) ) //Mark III & Sega Master System I&II & Megadrive with power base converter
-{
-        SDL_Surface *tempbgSurface;
-        SDL_Surface *bgSurface;
-	tempbgSurface = IMG_Load( "./SMS.png" );
-	bgSurface = SDL_DisplayFormat( tempbgSurface );
-      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
-	SDL_FreeSurface(tempbgSurface);
-	SDL_FreeSurface(bgSurface);
-}
-else if (  system_hw == SYSTEM_GG)   //Game gear
-{
-        SDL_Surface *tempbgSurface;
-        SDL_Surface *bgSurface;
-	tempbgSurface = IMG_Load( "./GG.png" );
-	bgSurface = SDL_DisplayFormat( tempbgSurface );
-      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
-	SDL_FreeSurface(tempbgSurface);
-	SDL_FreeSurface(bgSurface);
-}
-else if (  system_hw == SYSTEM_MD)   //Megadrive
-{
-        SDL_Surface *tempbgSurface;
-        SDL_Surface *bgSurface;
-	tempbgSurface = IMG_Load( "./MD.png" );
-	bgSurface = SDL_DisplayFormat( tempbgSurface );
-      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
-	SDL_FreeSurface(tempbgSurface);
-	SDL_FreeSurface(bgSurface);
-}
-else if (  system_hw == SYSTEM_MCD)  //MegaCD
-{
-        SDL_Surface *tempbgSurface;
-        SDL_Surface *bgSurface;
-	tempbgSurface = IMG_Load( "./MCD.png" );
-	bgSurface = SDL_DisplayFormat( tempbgSurface );
-      	SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
-	SDL_FreeSurface(tempbgSurface);
-	SDL_FreeSurface(bgSurface);
-}
+//  identify system we are using to show correct background just cos we can :P
+	if      (  system_hw == SYSTEM_PICO) //Sega Pico
+	{
+            SDL_Surface *tempbgSurface;
+            SDL_Surface *bgSurface;
+	    tempbgSurface = IMG_Load( "./PICO.png" );
+	    bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	    SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	    SDL_FreeSurface(tempbgSurface);
+	    SDL_FreeSurface(bgSurface);
+        }
+        else if ( (system_hw == SYSTEM_SG)      || (system_hw == SYSTEM_SGII) ) //SG-1000 I&II
+        {
+            SDL_Surface *tempbgSurface;
+            SDL_Surface *bgSurface;
+	    tempbgSurface = IMG_Load( "./SG1000.png" );
+	    bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	    SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	    SDL_FreeSurface(tempbgSurface);
+	    SDL_FreeSurface(bgSurface);
+	}
+	else if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) ) //Mark III & Sega Master System I&II & Megadrive with power base converter
+	{
+            SDL_Surface *tempbgSurface;
+            SDL_Surface *bgSurface;
+	    tempbgSurface = IMG_Load( "./SMS.png" );
+	    bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	    SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	    SDL_FreeSurface(tempbgSurface);
+	    SDL_FreeSurface(bgSurface);
+	}
+	else if (  system_hw == SYSTEM_GG)   //Game gear
+	{
+            SDL_Surface *tempbgSurface;
+            SDL_Surface *bgSurface;
+	    tempbgSurface = IMG_Load( "./GG.png" );
+	    bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	    SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	    SDL_FreeSurface(tempbgSurface);
+	    SDL_FreeSurface(bgSurface);
+	}
+	else if (  system_hw == SYSTEM_MD)   //Megadrive
+	{
+            SDL_Surface *tempbgSurface;
+            SDL_Surface *bgSurface;
+	    tempbgSurface = IMG_Load( "./MD.png" );
+	    bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	    SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	    SDL_FreeSurface(tempbgSurface);
+	    SDL_FreeSurface(bgSurface);
+	}
+	else if (  system_hw == SYSTEM_MCD)  //MegaCD
+	{
+            SDL_Surface *tempbgSurface;
+            SDL_Surface *bgSurface;
+	    tempbgSurface = IMG_Load( "./MCD.png" );
+	    bgSurface = SDL_DisplayFormat( tempbgSurface );
+      	    SDL_BlitSurface(bgSurface, NULL, menuSurface, NULL);
+	    SDL_FreeSurface(tempbgSurface);
+	    SDL_FreeSurface(bgSurface);
+	}
 
 //      show menu
 	TTF_Init();
@@ -743,7 +735,7 @@ else if (  system_hw == SYSTEM_MCD)  //MegaCD
 	    "Reset",
 	    "Quit"
         };
-//Show title
+//	Show title
 	ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
         SDL_Rect destination;
 	    destination.x = 100;
