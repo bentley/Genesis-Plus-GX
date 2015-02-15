@@ -922,7 +922,7 @@ static int gcw0menu(void)
 //	if(keystate2[SDLK_LALT]) {
 //	    break;
 //	}
-        if(keystate2[SDLK_LCTRL])
+        if(keystate2[SDLK_LCTRL] && menustate != REMAP_OPTIONS)
         {
 	    if (selectedoption == 0) 
 	    { //Resume
@@ -1010,62 +1010,94 @@ static int gcw0menu(void)
            	selectedoption = 3;
        	        SDL_Delay(130);
             }
-            else if (selectedoption == 13)
-            {
-				//button a remap
-				SDL_Delay(130);
-				selectedoption++;
+
+        } else if(menustate == REMAP_OPTIONS){// REMAP_OPTIONS needs to capture all input
+			SDLKey pressed_key = 0;
+			
+			if (keystate2[SDLK_RETURN]) {
+				pressed_key = SDLK_RETURN;
+			} else if (keystate2[SDLK_LCTRL]) {
+				pressed_key = SDLK_LCTRL;
+			} else if (keystate2[SDLK_LALT]) {
+				pressed_key = SDLK_LALT;
+			} else if (keystate2[SDLK_LSHIFT]) {
+				pressed_key = SDLK_LSHIFT;
+			} else if (keystate2[SDLK_SPACE]) {
+				pressed_key = SDLK_SPACE;
+			} else if (keystate2[SDLK_TAB]) {
+				pressed_key = SDLK_TAB;
+			} else if (keystate2[SDLK_BACKSPACE]) {
+				pressed_key = SDLK_BACKSPACE;
 			}
-            else if (selectedoption == 14)
-            {
-				//button b remap
-				SDL_Delay(130);
-				selectedoption++;
+			
+			
+			if (pressed_key)
+			{
+				if (selectedoption == 13)
+				{
+					//button a remap
+					config.buttons[A] = pressed_key;
+					SDL_Delay(130);
+					selectedoption++;
+				}
+				else if (selectedoption == 14)
+				{
+					//button b remap
+					config.buttons[B] = pressed_key;
+					SDL_Delay(130);
+					selectedoption++;
+				}
+				else if (selectedoption == 15)
+				{
+					//button c remap
+					config.buttons[C] = pressed_key;
+					SDL_Delay(130);
+					selectedoption++;
+				}
+				else if (selectedoption == 16)
+				{
+					//button x remap
+					config.buttons[X] = pressed_key;
+					SDL_Delay(130);
+					selectedoption++;
+				}
+				else if (selectedoption == 17)
+				{
+					//button y remap
+					config.buttons[Y] = pressed_key;
+					SDL_Delay(130);
+					selectedoption++;
+				}
+				else if (selectedoption == 18)
+				{
+					//button z remap
+					config.buttons[Z] = pressed_key;
+					SDL_Delay(130);
+					selectedoption++;
+				}
+				else if (selectedoption == 19)
+				{
+					//button start remap
+					config.buttons[START] = pressed_key;
+					SDL_Delay(130);
+					selectedoption++;
+				}
+				else if (selectedoption == 20)
+				{
+					//button mode remap
+					config.buttons[MODE] = pressed_key;
+					SDL_Delay(130);
+					selectedoption++;
+				}
+				else if (selectedoption == 21)
+				{
+					//return to main menu
+					menustate = MAINMENU;
+					selectedoption = 4;
+					SDL_Delay(130);
+				}	
 			}
-            else if (selectedoption == 15)
-            {
-				//button c remap
-				SDL_Delay(130);
-				selectedoption++;
-			}
-            else if (selectedoption == 16)
-            {
-				//button x remap
-				SDL_Delay(130);
-				selectedoption++;
-			}
-            else if (selectedoption == 17)
-            {
-				//button y remap
-				SDL_Delay(130);
-				selectedoption++;
-			}
-            else if (selectedoption == 18)
-            {
-				//button z remap
-				SDL_Delay(130);
-				selectedoption++;
-			}
-            else if (selectedoption == 19)
-            {
-				//button start remap
-				SDL_Delay(130);
-				selectedoption++;
-			}
-            else if (selectedoption == 20)
-            {
-				//button mode remap
-				SDL_Delay(130);
-				selectedoption++;
-			}
-            else if (selectedoption == 21)
-            {
-				//return to main menu
-				menustate = MAINMENU;
-				selectedoption = 3;
-       	        SDL_Delay(130);
-			}
-        }
+		}
 			
     }//menu loop
     if(gcw0menu_fullscreen) {
