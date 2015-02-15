@@ -84,14 +84,14 @@ void set_config_defaults(void)
         config.input[i].padtype = DEVICE_PAD2B | DEVICE_PAD3B | DEVICE_PAD6B;
     }
     
-	config.button_a = SDLK_LSHIFT;//x
-	config.button_b = SDLK_LALT;//b
-	config.button_c = SDLK_LCTRL;//a
-	config.button_x = SDLK_TAB;//l
-	config.button_y = SDLK_SPACE;//y
-	config.button_z = SDLK_BACKSPACE;//r
-	config.button_start = SDLK_RETURN;//start
-	config.button_mode = 0;
+	config.buttons[A] 		= SDLK_LSHIFT;//x
+	config.buttons[B] 		= SDLK_LALT;//b
+	config.buttons[C] 		= SDLK_LCTRL;//a
+	config.buttons[X] 		= SDLK_TAB;//l
+	config.buttons[Y] 		= SDLK_SPACE;//y
+	config.buttons[Z] 		= SDLK_BACKSPACE;//r
+	config.buttons[START] 	= SDLK_RETURN;//start
+	config.buttons[MODE] 	= 0;
     
     /* try to restore user config */
 	int loaded = config_load();

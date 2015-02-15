@@ -138,3 +138,20 @@ char* get_save_directory(void) {
     return pathname;
 	
 }
+
+char* gcw0_get_key_name(int keycode)
+{
+	     if (keycode == SDLK_UP)			return "Up";
+	else if (keycode == SDLK_DOWN)  		return "Down";
+	else if (keycode == SDLK_LEFT)  		return "Left";
+	else if (keycode == SDLK_RIGHT) 		return "Right";
+	else if (keycode == SDLK_LCTRL)     	return "A";
+	else if (keycode == SDLK_LALT)     	return "B";
+	else if (keycode == SDLK_LSHIFT)     	return "X";
+	else if (keycode == SDLK_SPACE)     	return "Y";
+	else if (keycode == SDLK_TAB)     		return "L";
+	else if (keycode == SDLK_BACKSPACE)	return "R";
+	else if (keycode == SDLK_RETURN)		return "Start";
+	else if (keycode == SDLK_ESCAPE)		return "Select";
+	else return "...";
+}

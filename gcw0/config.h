@@ -8,6 +8,9 @@
  * Config Option
  *
  ****************************************************************************/
+ 
+enum {A = 0, B, C, X, Y, Z, START, MODE};
+ 
 typedef struct
 {
   uint8 padtype;
@@ -47,14 +50,15 @@ typedef struct
   uint8 render;
   t_input_config input[MAX_INPUTS];
   uint8 gcw0_fullscreen;
-  SDLKey button_a;
-  SDLKey button_b;
-  SDLKey button_c;
-  SDLKey button_x;
-  SDLKey button_y;
-  SDLKey button_z;
-  SDLKey button_start;
-  SDLKey button_mode;
+  SDLKey buttons[8];
+  //SDLKey button_a;
+  //SDLKey button_b;
+  //SDLKey button_c;
+  //SDLKey button_x;
+  //SDLKey button_y;
+  //SDLKey button_z;
+  //SDLKey button_start;
+  //SDLKey button_mode;
 } t_config;
 
 /* Global variables */

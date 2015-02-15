@@ -664,7 +664,7 @@ static int gcw0menu(void)
         "On",
     };
  
-    const char *gcw0menu_remapoptionslist[8]=
+    const char *gcw0menu_remapoptionslist[9]=
     {
         "A",
         "B",
@@ -674,6 +674,7 @@ static int gcw0menu(void)
         "Z",
         "Start",
         "Mode",
+        "Return to main menu",
     };
 //  start menu loop - default = display main menu
 //    int done;
@@ -831,15 +832,21 @@ static int gcw0menu(void)
         }
         else if (menustate == REMAP_OPTIONS)
         {
+			char* remap_text[256];
 			ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
-            for(i=0; i<8; i++)
+            for(i=0; i < 9; i++)
             {
-                SDL_Rect destination;
-                destination.x = 30;
-                destination.y = 50+(15*i);
-                destination.w = 100;
-                destination.h = 50;
-                textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_remapoptionslist[i], text_color);
+				if (i < 8) {
+					sprintf(remap_text, "%s%15s", gcw0menu_remapoptionslist[i], gcw0_get_key_name(config.buttons[i]));
+				} else {
+					sprintf(remap_text, gcw0menu_remapoptionslist[i]); // for return option
+				}
+                SDL_Rect destination = {30, 60 + (15 * i), 100, 50};
+                if ((i+13) == selectedoption) {
+					textSurface = TTF_RenderText_Solid(ttffont, remap_text, selected_text_color);
+				} else {
+					textSurface = TTF_RenderText_Solid(ttffont, remap_text, text_color);
+				}
                 SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
                 SDL_FreeSurface(textSurface);
             }
@@ -874,9 +881,13 @@ static int gcw0menu(void)
         uint8 *keystate2 = SDL_GetKeyState(NULL);
         if(keystate2[SDLK_DOWN])
         {
-	        if(selectedoption>9) { //graphics menu
+	        if(selectedoption > 9 && selectedoption < 13) { //graphics menu
 	            selectedoption++;
 	    	    if (selectedoption == 13) selectedoption = 10;
+    	    } else if (selectedoption > 12 && selectedoption < 22) //remap menu
+    	    {
+				if (selectedoption == 21)    selectedoption = 13;
+				else                         selectedoption++;
 	        } else { //main menu
 	            selectedoption++;
 	            if (selectedoption == 5) 
@@ -889,12 +900,17 @@ static int gcw0menu(void)
         if(keystate2[SDLK_UP])
         {
         
-    	    if(selectedoption>9) //graphics menu
+    	    if(selectedoption > 9 && selectedoption < 13) //graphics menu
             { 
 	        	if (selectedoption == 10)    selectedoption = 12;
 		        else                         selectedoption--;
-    	    } else 
-	    { //main menu
+    	    } else if (selectedoption > 12 && selectedoption < 22) //remap menu
+    	    {
+				if (selectedoption == 13)    selectedoption = 21;
+				else                         selectedoption--;
+			} else 
+    	    
+    	    { //main menu
     	        if (!selectedoption)
 	                selectedoption = 7;
   	            else
@@ -957,8 +973,9 @@ static int gcw0menu(void)
 	    else if (selectedoption == 4)   //Remap
             {
 //TODO
-		menustate = REMAP_OPTIONS;
-                selectedoption=0;
+				menustate = REMAP_OPTIONS;
+                selectedoption=13;
+                SDL_Delay(200);
             }
             else if (selectedoption == 6)   //Reset
             {
@@ -993,7 +1010,63 @@ static int gcw0menu(void)
            	selectedoption = 3;
        	        SDL_Delay(130);
             }
+            else if (selectedoption == 13)
+            {
+				//button a remap
+				SDL_Delay(130);
+				selectedoption++;
+			}
+            else if (selectedoption == 14)
+            {
+				//button b remap
+				SDL_Delay(130);
+				selectedoption++;
+			}
+            else if (selectedoption == 15)
+            {
+				//button c remap
+				SDL_Delay(130);
+				selectedoption++;
+			}
+            else if (selectedoption == 16)
+            {
+				//button x remap
+				SDL_Delay(130);
+				selectedoption++;
+			}
+            else if (selectedoption == 17)
+            {
+				//button y remap
+				SDL_Delay(130);
+				selectedoption++;
+			}
+            else if (selectedoption == 18)
+            {
+				//button z remap
+				SDL_Delay(130);
+				selectedoption++;
+			}
+            else if (selectedoption == 19)
+            {
+				//button start remap
+				SDL_Delay(130);
+				selectedoption++;
+			}
+            else if (selectedoption == 20)
+            {
+				//button mode remap
+				SDL_Delay(130);
+				selectedoption++;
+			}
+            else if (selectedoption == 21)
+            {
+				//return to main menu
+				menustate = MAINMENU;
+				selectedoption = 3;
+       	        SDL_Delay(130);
+			}
         }
+			
     }//menu loop
     if(gcw0menu_fullscreen) {
         sdl_video.drect.w = sdl_video.srect.w;
@@ -1204,14 +1277,14 @@ int sdl_input_update(void)
     default:
     {
 #ifdef GCWZERO
-        if(keystate[config.button_a])    	input.pad[joynum] |= INPUT_A;
-        if(keystate[config.button_b])      	input.pad[joynum] |= INPUT_B;
-        if(keystate[config.button_c])     	input.pad[joynum] |= INPUT_C;
-        if(keystate[config.button_start])  	input.pad[joynum] |= INPUT_START;
-        if(keystate[config.button_x])      	input.pad[joynum] |= INPUT_X;
-        if(keystate[config.button_y])     	input.pad[joynum] |= INPUT_Y;
-        if(keystate[config.button_z]) 		input.pad[joynum] |= INPUT_Z;
-        if(keystate[config.button_mode])  	input.pad[joynum] |= INPUT_MODE;
+        if(keystate[config.buttons[A]])    	input.pad[joynum] |= INPUT_A;
+        if(keystate[config.buttons[B]])      	input.pad[joynum] |= INPUT_B;
+        if(keystate[config.buttons[C]])     	input.pad[joynum] |= INPUT_C;
+        if(keystate[config.buttons[START]])  	input.pad[joynum] |= INPUT_START;
+        if(keystate[config.buttons[X]])      	input.pad[joynum] |= INPUT_X;
+        if(keystate[config.buttons[Y]])     	input.pad[joynum] |= INPUT_Y;
+        if(keystate[config.buttons[Z]]) 		input.pad[joynum] |= INPUT_Z;
+        if(keystate[config.buttons[MODE]])  	input.pad[joynum] |= INPUT_MODE;
  
 //DK load/save better handled by menu?
         if (keystate[SDLK_ESCAPE])
