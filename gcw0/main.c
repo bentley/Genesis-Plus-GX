@@ -15,8 +15,14 @@
 #ifdef GCWZERO
 #include <SDL_ttf.h>
 #include <SDL_image.h>
+/* Configuration variables */
+static int gcw0menu_fullscreen = 1; //scaling: 0=off, 1=on
+static int keepaspectratio     = 1; //keep aspect ratio: 1=off, 0=on (may break with future firmware updates)
+
+static int do_once = 1;
 static int gcw0_w;
 static int gcw0_h;
+static int gotomenu;
 #endif
 
 //DK no difference? Might as well save some cycles. #define SOUND_FREQUENCY 48000
@@ -646,15 +652,16 @@ static int gcw0menu(void)
  
     enum {MAINMENU = 0, GRAPHICS_OPTIONS, REMAP_OPTIONS};
     int menustate  = MAINMENU;
-    const char *gcw0menu_graphicsoptionslist[8]=
+    const char *gcw0menu_gfxlist[3]=
     {
         "Scaling",
         "Keep aspect ratio",
+        "Return to main menu",
     };
     const char *gcw0menu_onofflist[2]=
     {
-        "On",
         "Off",
+        "On",
     };
  
     const char *gcw0menu_remapoptionslist[8]=
@@ -669,9 +676,9 @@ static int gcw0menu(void)
         "Mode",
     };
 //  start menu loop - default = display main menu
-    int done;
+//    int done;
     bitmap.viewport.changed=1; //change screen res if required
-    while(!done)
+    while(gotomenu)
     {
  
 //  identify system we are using to show correct background just cos we can :P
@@ -747,11 +754,12 @@ static int gcw0menu(void)
         static int selectedoption = 0;
         const char *gcw0menu_mainlist[8]=
         {
+            "Resume game",
             "Save state",
             "Load state",
             "Graphics options",
             "Remap buttons",
-            "Resume game",
+            
             "", //spacer
             "Reset",
             "Quit"
@@ -791,18 +799,35 @@ static int gcw0menu(void)
         else if (menustate == GRAPHICS_OPTIONS)
         {
 			ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
-            for(i=0; i<2; i++)
+            for(i=0; i<3; i++)
             {
                 SDL_Rect destination;
                 destination.x = 100;
-                destination.y = 40+(15*i);
+                destination.y = 70+(15*i);
                 destination.w = 100;
                 destination.h = 50;
-                textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_graphicsoptionslist[i], text_color);
+                if ((i+10) == selectedoption)
+		            textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_gfxlist[i], selected_text_color);
+		        else
+		            textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_gfxlist[i], text_color);
                 SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
                 SDL_FreeSurface(textSurface);
             }
+            /* Display On/Off */
+            SDL_Rect destination;
+	        destination.x = 220;
+            destination.y = 70+(15*0);
+	        destination.w = 100; 
+	        destination.h = 50;
+	        textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[gcw0menu_fullscreen], selected_text_color);
+    	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+	        SDL_FreeSurface(textSurface);
+            destination.y = 70+(15*1);
+    	    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[keepaspectratio], selected_text_color);
+	        SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+	        SDL_FreeSurface(textSurface);
             TTF_CloseFont (ttffont);
+
         }
         else if (menustate == REMAP_OPTIONS)
         {
@@ -823,7 +848,6 @@ static int gcw0menu(void)
  
 //TODO other menu's go here
  
-//TODO add on/off depending on variables.
  
         /* Update display */
         SDL_Rect dest;
@@ -850,14 +874,34 @@ static int gcw0menu(void)
         uint8 *keystate2 = SDL_GetKeyState(NULL);
         if(keystate2[SDLK_DOWN])
         {
-            selectedoption++;
-            if (selectedoption == 5) selectedoption = 6;
-            if (selectedoption>7)
-                selectedoption=0;
-            SDL_Delay(170);
-        }
+	        if(selectedoption>9) { //graphics menu
+	            selectedoption++;
+	    	    if (selectedoption == 13) selectedoption = 10;
+	        } else { //main menu
+	            selectedoption++;
+	            if (selectedoption == 5) 
+                    selectedoption = 6;
+	            if (selectedoption>7)
+	                selectedoption=0;
+    	    }
+            SDL_Delay(100);
+    	}
         if(keystate2[SDLK_UP])
         {
+        
+    	    if(selectedoption>9) //graphics menu
+            { 
+	        	if (selectedoption == 10)    selectedoption = 12;
+		        else                         selectedoption--;
+    	    } else { //main menu
+    	        if (!selectedoption)
+	                selectedoption = 7;
+  	            else
+	                selectedoption--;
+	            if (selectedoption == 5) selectedoption = 4;
+    	    }
+	        SDL_Delay(100);
+        }
             if (!selectedoption)
                 selectedoption = 7;
             else
@@ -870,7 +914,13 @@ static int gcw0menu(void)
 //	}
         if(keystate2[SDLK_LCTRL])
         {
-            if (selectedoption == 0)   //Save
+	        if (selectedoption == 0) { //Resume
+		        gotomenu=0;
+	        	selectedoption=0;
+	            SDL_Delay(130);
+	            break;
+            } else
+            if (selectedoption == 1)   //Save
             {
                 char save_state_file[256];
                 sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc);
@@ -882,10 +932,10 @@ static int gcw0menu(void)
                     fwrite(&buf, len, 1, f);
                     fclose(f);
                 }
-                SDL_Delay(170);
+                SDL_Delay(130);
                 break;
-            }
-            if (selectedoption == 1)   //Load
+            } else
+            if (selectedoption == 2)   //Load
             {
                 char save_state_file[256];
                 sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc );
@@ -898,59 +948,78 @@ static int gcw0menu(void)
                     fclose(f);
                 }
                 selectedoption=0;
-                SDL_Delay(170);
+                SDL_Delay(130);
                 break;
-            }
-            if (selectedoption == 2)   //Graphics
+            } else
+            if (selectedoption == 3)   //Graphics
             {
-                config.gcw0_fullscreen = !config.gcw0_fullscreen;//toggle
-                if(!config.gcw0_fullscreen)
-                {
-                    gcw0_w=320;
-                    gcw0_h=240;
-                    sdl_video.surf_screen  = SDL_SetVideoMode(gcw0_w,gcw0_h, 16, SDL_HWSURFACE |
-#ifdef SDL_TRIPLEBUF
-                                             SDL_TRIPLEBUF);
-#else
-                                             SDL_DOUBLEBUF);
-#endif
-                }
-                selectedoption=0;
-                config_save();
-                SDL_Delay(170);
-                break;
-            }
-            if (selectedoption == 3)   //Remap
+                menustate == GRAPHICS_OPTIONS;
+//        		gfxmenu        = 1;
+//		        showmainmenu   = 0;
+	        	selectedoption = 10;
+	            SDL_Delay(200);
+            } else 
+            if (selectedoption == 4)   //Remap
             {
 //TODO
 				menustate = REMAP_OPTIONS;
                 selectedoption=0;
-            }
+            } else
             if (selectedoption == 4)   //Resume
             {
                 selectedoption=0;
-                SDL_Delay(170);
+                SDL_Delay(130);
                 break;
-            }
+            } else
             if (selectedoption == 6)   //Reset
             {
-//TODO
                 selectedoption=0;
                 system_reset();
-                SDL_Delay(170);
+                SDL_Delay(130);
                 break;
             }
             if (selectedoption == 7)   //Quit
             {
-//TODO
                 exit(0);
-                SDL_Delay(170);
+                SDL_Delay(130);
                 break;
             }
+    	    if (selectedoption == 10) { //Scaling
+	        	gcw0menu_fullscreen = !gcw0menu_fullscreen;//toggle
+	            SDL_Delay(130);
+    	    } else
+            if (selectedoption == 11) { //Keep aspect ratio
+                SDL_Delay(130);
+           		keepaspectratio = !keepaspectratio;
+            	do_once = 1;
+       	    } else
+            if (selectedoption == 12) { //Back to main menu
+                menustate == GRAPHICS_OPTIONS;
+//	            showmainmenu   = 1;
+//         		gfxmenu        = 0;
+           		selectedoption = 3;
+       	        SDL_Delay(130);
+            }
         }
-//change variables
-    }//done
- 
+    }//menu loop
+    if(gcw0menu_fullscreen) {
+        sdl_video.drect.w = sdl_video.srect.w;
+        sdl_video.drect.h = sdl_video.srect.h;
+        sdl_video.drect.x = 0;
+        sdl_video.drect.y = 0;
+        gcw0_w=sdl_video.drect.w;
+        gcw0_h=sdl_video.drect.h;
+//      gcw0_w=320;
+//      gcw0_h=240;
+        sdl_video.surf_screen  = SDL_SetVideoMode(gcw0_w,gcw0_h, 16, SDL_HWSURFACE |  
+#ifdef SDL_TRIPLEBUF
+                                 SDL_TRIPLEBUF);
+#else
+                                 SDL_DOUBLEBUF);
+#endif
+    } else {
+    ;
+    }
     return 1;
 }
 #endif
@@ -1154,7 +1223,7 @@ int sdl_input_update(void)
 //DK load/save better handled by menu?
         if (keystate[SDLK_ESCAPE])
         {
-            gcw0menu();
+            gotomenu=1;
         }
 #else
         if(keystate[SDLK_a])  input.pad[joynum] |= INPUT_A;
@@ -1378,7 +1447,35 @@ int main (int argc, char **argv)
             }
             }
         }
- 
+#ifdef GCWZERO
+    	if (do_once) 
+        {
+	        do_once--; //don't waste write cycles!
+	        if (keepaspectratio)
+	        {
+		        FILE* aspect_ratio_file = fopen("/sys/devices/platform/jz-lcd.0/keep_aspect_ratio", "w");
+	        	if (aspect_ratio_file)
+	        	{ 
+		        	fwrite("Y", 1, 1, aspect_ratio_file);
+			        fclose(aspect_ratio_file);
+        		}
+            }
+            if (!keepaspectratio)
+    	    {
+	        	FILE* aspect_ratio_file = fopen("/sys/devices/platform/jz-lcd.0/keep_aspect_ratio", "w");
+		        if (aspect_ratio_file)
+		        { 
+			        fwrite("N", 1, 1, aspect_ratio_file);
+			        fclose(aspect_ratio_file);
+		        }
+	        }
+	    }
+	    if (gotomenu) 
+        {
+	        gcw0menu();
+    	}
+#endif
+
         sdl_video_update();
         sdl_sound_update(use_sound);
  
