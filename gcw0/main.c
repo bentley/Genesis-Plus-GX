@@ -858,7 +858,7 @@ static int gcw0menu(void)
 					sprintf(remap_text, gcw0menu_remapoptionslist[i]); // for return option
 				}
                 SDL_Rect destination = {30, 60 + (15 * i), 100, 50};
-                if ((i+13) == selectedoption) {
+                if ((i+20) == selectedoption) {
 					textSurface = TTF_RenderText_Solid(ttffont, remap_text, selected_text_color);
 				} else {
 					textSurface = TTF_RenderText_Solid(ttffont, remap_text, text_color);
@@ -897,14 +897,14 @@ static int gcw0menu(void)
         uint8 *keystate2 = SDL_GetKeyState(NULL);
         if(keystate2[SDLK_DOWN])
         {
-	        if(selectedoption > 9 && selectedoption < 14) { //graphics menu
-	            selectedoption++;
-	    	    if (selectedoption == 14) selectedoption = 10;
-    	    } else if (selectedoption > 13 && selectedoption < 23) //remap menu
+            if(selectedoption > 9 && selectedoption < 20) { //graphics menu
+                selectedoption++;
+                if (selectedoption == 14) selectedoption = 10;
+    	    } else if (selectedoption > 19 && selectedoption < 30) //remap menu
     	    {
-				if (selectedoption == 22)    selectedoption = 14;
-				else                         selectedoption++;
-	        } else { //main menu
+                 selectedoption++;
+                 if (selectedoption == 29)    selectedoption = 20;
+            } else { //main menu
 	            selectedoption++;
 	            if (selectedoption == 5) 
                     selectedoption = 6;
@@ -916,15 +916,15 @@ static int gcw0menu(void)
         if(keystate2[SDLK_UP])
         {
         
-    	    if(selectedoption > 9 && selectedoption < 14) //graphics menu
+    	    if(selectedoption > 9 && selectedoption < 20) //graphics menu
             { 
 			selectedoption--;
 	        	if (selectedoption == 9)    selectedoption = 13;
 //		        else                         selectedoption--;
-    	    } else if (selectedoption > 13 && selectedoption < 23) //remap menu
+    	    } else if (selectedoption > 19 && selectedoption < 30) //remap menu
     	    {
-				if (selectedoption == 14)    selectedoption = 22;
-				else                         selectedoption--;
+				selectedoption--;
+				if (selectedoption == 19)    selectedoption = 28;
 			} else 
     	    
     	    { //main menu
@@ -989,7 +989,7 @@ static int gcw0menu(void)
             {
 //TODO
 				menustate = REMAP_OPTIONS;
-                selectedoption=14;
+                selectedoption=20;
                 SDL_Delay(200);
             }
             else if (selectedoption == 6)   //Reset
@@ -1028,59 +1028,59 @@ static int gcw0menu(void)
            	selectedoption = 3;
        	        SDL_Delay(130);
             }
-            else if (selectedoption == 14)
+            else if (selectedoption == 20)
             {
 				//button a remap
 				SDL_Delay(130);
 				selectedoption++;
 			}
-            else if (selectedoption == 15)
+            else if (selectedoption == 21)
             {
 				//button b remap
 				SDL_Delay(130);
 				selectedoption++;
 			}
-            else if (selectedoption == 16)
+            else if (selectedoption == 22)
             {
 				//button c remap
 				SDL_Delay(130);
 				selectedoption++;
 			}
-            else if (selectedoption == 17)
+            else if (selectedoption == 23)
             {
 				//button x remap
 				SDL_Delay(130);
 				selectedoption++;
 			}
-            else if (selectedoption == 18)
+            else if (selectedoption == 24)
             {
 				//button y remap
 				SDL_Delay(130);
 				selectedoption++;
 			}
-            else if (selectedoption == 19)
+            else if (selectedoption == 25)
             {
 				//button z remap
 				SDL_Delay(130);
 				selectedoption++;
 			}
-            else if (selectedoption == 20)
+            else if (selectedoption == 26)
             {
 				//button start remap
 				SDL_Delay(130);
 				selectedoption++;
 			}
-            else if (selectedoption == 21)
+            else if (selectedoption == 27)
             {
 				//button mode remap
 				SDL_Delay(130);
 				selectedoption++;
 			}
-            else if (selectedoption == 22)
+            else if (selectedoption == 28)
             {
 				//return to main menu
 				menustate = MAINMENU;
-				selectedoption = 3;
+				selectedoption = 4;
        	        SDL_Delay(130);
 			}
         }
