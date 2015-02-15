@@ -967,6 +967,7 @@ static int gcw0menu(void)
                     fwrite(&buf, len, 1, f);
                     fclose(f);
                 }
+                gotomenu = 0;
                 SDL_Delay(130);
                 break;
             }
@@ -982,6 +983,7 @@ static int gcw0menu(void)
                     state_load(buf);
                     fclose(f);
                 }
+                gotomenu = 0;
                 selectedoption=0;
                 SDL_Delay(130);
                 break;
