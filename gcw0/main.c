@@ -962,6 +962,7 @@ static int gcw0menu(void)
             }
             else if (selectedoption == 6)   //Reset
             {
+		gotomenu = 0;
                 selectedoption=0;
                 system_reset();
                 SDL_Delay(130);
