@@ -18,6 +18,7 @@
 /* Configuration variables */
 static int gcw0menu_fullscreen = 1; //scaling: 0=off, 1=on
 static int keepaspectratio     = 1; //keep aspect ratio: 1=off, 0=on (may break with future firmware updates)
+static int gg_scanlines        = 1; //game gear scanlines: 1=on, 0=off
 
 static int do_once = 1;
 static int gcw0_w;
@@ -310,6 +311,16 @@ static void sdl_video_update()
     SDL_BlitSurface(sdl_video.surf_bitmap, &sdl_video.srect, sdl_video.surf_screen, &sdl_video.drect);
     //SDL_UpdateRect(sdl_video.surf_screen, 0, 0, 0, 0);
  
+ #ifdef GCWZERO
+    if ((system_hw == SYSTEM_GG) && gg_scanlines)
+    {
+        SDL_Surface *scanlinesSurface;
+        scanlinesSurface = IMG_Load("./scanlines.png");
+        SDL_BlitSurface(scanlinesSurface, NULL, sdl_video.surf_screen, &sdl_video.drect);
+	SDL_FreeSurface(scanlinesSurface);
+    }
+#endif
+
 //DK frameskip testing, uncomment below to set to 30fps flipped (virtual racing tests)
 //static int eo;
 //if(eo){
@@ -646,16 +657,26 @@ static int gcw0menu(void)
     SDL_Surface *menuSurface = NULL;
     menuSurface = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 16, 0, 0, 0, 0);
  
-    //int showmainmenu          = 1;
-    //int showgraphicsoptions   = 0;
-    //int showremapoptions	= 0;
- 
     enum {MAINMENU = 0, GRAPHICS_OPTIONS = 1, REMAP_OPTIONS = 2};
     static int menustate  = MAINMENU;
-    const char *gcw0menu_gfxlist[3]=
+//  Menu text
+    const char *gcw0menu_mainlist[8]=
+    {
+        "Resume game",
+        "Save state",
+        "Load state",
+        "Graphics options",
+        "Remap buttons",
+            
+        "", //spacer
+        "Reset",
+        "Quit"
+    };
+    const char *gcw0menu_gfxlist[4]=
     {
         "Scaling",
         "Keep aspect ratio",
+        "Scanlines (GG)",
         "Return to main menu",
     };
     const char *gcw0menu_onofflist[2]=
@@ -676,8 +697,7 @@ static int gcw0menu(void)
         "Mode",
         "Return to main menu",
     };
-//  start menu loop - default = display main menu
-//    int done;
+//  start menu loop
     bitmap.viewport.changed=1; //change screen res if required
     while(gotomenu)
     {
@@ -753,18 +773,6 @@ static int gcw0menu(void)
  
         int i;
         static int selectedoption = 0;
-        const char *gcw0menu_mainlist[8]=
-        {
-            "Resume game",
-            "Save state",
-            "Load state",
-            "Graphics options",
-            "Remap buttons",
-            
-            "", //spacer
-            "Reset",
-            "Quit"
-        };
 //	Show title
         ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
         SDL_Rect destination;
@@ -800,7 +808,7 @@ static int gcw0menu(void)
         else if (menustate == GRAPHICS_OPTIONS)
         {
 			ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
-            for(i=0; i<3; i++)
+            for(i=0; i<4; i++)
             {
                 SDL_Rect destination;
                 destination.x = 100;
@@ -817,16 +825,24 @@ static int gcw0menu(void)
             /* Display On/Off */
             SDL_Rect destination;
 	        destination.x = 220;
-            destination.y = 70+(15*0);
 	        destination.w = 100; 
 	        destination.h = 50;
-	        textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[gcw0menu_fullscreen], selected_text_color);
+//          Scaling
+            destination.y = 70+(15*0);
+            textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[gcw0menu_fullscreen], selected_text_color);
     	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
 	        SDL_FreeSurface(textSurface);
+//          Aspect ratio
             destination.y = 70+(15*1);
     	    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[keepaspectratio], selected_text_color);
 	        SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
 	        SDL_FreeSurface(textSurface);
+//	        Scanlines
+            destination.y = 70+(15*2);
+    	    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[gg_scanlines], selected_text_color);
+	        SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+	        SDL_FreeSurface(textSurface);
+
             TTF_CloseFont (ttffont);
 
         }
@@ -842,7 +858,7 @@ static int gcw0menu(void)
 					sprintf(remap_text, gcw0menu_remapoptionslist[i]); // for return option
 				}
                 SDL_Rect destination = {30, 60 + (15 * i), 100, 50};
-                if ((i+13) == selectedoption) {
+                if ((i+20) == selectedoption) {
 					textSurface = TTF_RenderText_Solid(ttffont, remap_text, selected_text_color);
 				} else {
 					textSurface = TTF_RenderText_Solid(ttffont, remap_text, text_color);
@@ -881,14 +897,14 @@ static int gcw0menu(void)
         uint8 *keystate2 = SDL_GetKeyState(NULL);
         if(keystate2[SDLK_DOWN])
         {
-	        if(selectedoption > 9 && selectedoption < 13) { //graphics menu
-	            selectedoption++;
-	    	    if (selectedoption == 13) selectedoption = 10;
-    	    } else if (selectedoption > 12 && selectedoption < 22) //remap menu
+            if(selectedoption > 9 && selectedoption < 20) { //graphics menu
+                selectedoption++;
+                if (selectedoption == 14) selectedoption = 10;
+    	    } else if (selectedoption > 19 && selectedoption < 30) //remap menu
     	    {
-				if (selectedoption == 21)    selectedoption = 13;
-				else                         selectedoption++;
-	        } else { //main menu
+                 selectedoption++;
+                 if (selectedoption == 29)    selectedoption = 20;
+            } else { //main menu
 	            selectedoption++;
 	            if (selectedoption == 5) 
                     selectedoption = 6;
@@ -900,14 +916,15 @@ static int gcw0menu(void)
         if(keystate2[SDLK_UP])
         {
         
-    	    if(selectedoption > 9 && selectedoption < 13) //graphics menu
+    	    if(selectedoption > 9 && selectedoption < 20) //graphics menu
             { 
-	        	if (selectedoption == 10)    selectedoption = 12;
-		        else                         selectedoption--;
-    	    } else if (selectedoption > 12 && selectedoption < 22) //remap menu
+			selectedoption--;
+	        	if (selectedoption == 9)    selectedoption = 13;
+//		        else                         selectedoption--;
+    	    } else if (selectedoption > 19 && selectedoption < 30) //remap menu
     	    {
-				if (selectedoption == 13)    selectedoption = 21;
-				else                         selectedoption--;
+				selectedoption--;
+				if (selectedoption == 19)    selectedoption = 28;
 			} else 
     	    
     	    { //main menu
@@ -965,21 +982,19 @@ static int gcw0menu(void)
             else if (selectedoption == 3)   //Graphics
             {
                 menustate = GRAPHICS_OPTIONS;
-//      	gfxmenu        = 1;
-//	        showmainmenu   = 0;
-	       	selectedoption = 10;
-	        SDL_Delay(200);
+     	       	selectedoption = 10;
+	            SDL_Delay(200);
             }
-	    else if (selectedoption == 4)   //Remap
+	        else if (selectedoption == 4)   //Remap
             {
 //TODO
 				menustate = REMAP_OPTIONS;
-                selectedoption=13;
+                selectedoption=20;
                 SDL_Delay(200);
             }
             else if (selectedoption == 6)   //Reset
             {
-		gotomenu = 0;
+		        gotomenu = 0;
                 selectedoption=0;
                 system_reset();
                 SDL_Delay(130);
@@ -992,21 +1007,24 @@ static int gcw0menu(void)
                 break;
             }
     	    else if (selectedoption == 10) 
-	    { //Scaling
-	       	gcw0menu_fullscreen = !gcw0menu_fullscreen;
-	        SDL_Delay(130);
+	        { //Scaling
+           	    gcw0menu_fullscreen = !gcw0menu_fullscreen;
+                SDL_Delay(130);
     	    }
             else if (selectedoption == 11) 
-	    { //Keep aspect ratio
+            { //Keep aspect ratio
                 SDL_Delay(130);
-           	keepaspectratio = !keepaspectratio;
+           	    keepaspectratio = !keepaspectratio;
             	do_once = 1;
        	    }
             else if (selectedoption == 12) 
+            { //Scanlines (GG)
+                SDL_Delay(130);
+           	gg_scanlines = !gg_scanlines;
+       	    }
+            else if (selectedoption == 13) 
   	    { //Back to main menu
                 menustate = MAINMENU;
-//	        showmainmenu   = 1;
-//        	gfxmenu        = 0;
            	selectedoption = 3;
        	        SDL_Delay(130);
             }
@@ -1033,63 +1051,63 @@ static int gcw0menu(void)
 			
 			if (pressed_key)
 			{
-				if (selectedoption == 13)
+				if (selectedoption == 20)
 				{
 					//button a remap
 					config.buttons[A] = pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
-				else if (selectedoption == 14)
+				else if (selectedoption == 21)
 				{
 					//button b remap
 					config.buttons[B] = pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
-				else if (selectedoption == 15)
+				else if (selectedoption == 22)
 				{
 					//button c remap
 					config.buttons[C] = pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
-				else if (selectedoption == 16)
+				else if (selectedoption == 23)
 				{
 					//button x remap
 					config.buttons[X] = pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
-				else if (selectedoption == 17)
+				else if (selectedoption == 24)
 				{
 					//button y remap
 					config.buttons[Y] = pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
-				else if (selectedoption == 18)
+				else if (selectedoption == 25)
 				{
 					//button z remap
 					config.buttons[Z] = pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
-				else if (selectedoption == 19)
+				else if (selectedoption == 26)
 				{
 					//button start remap
 					config.buttons[START] = pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
-				else if (selectedoption == 20)
+				else if (selectedoption == 27)
 				{
 					//button mode remap
 					config.buttons[MODE] = pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
-				else if (selectedoption == 21)
+				else if (selectedoption == 28)
 				{
 					//return to main menu
 					menustate = MAINMENU;
