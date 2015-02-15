@@ -1138,7 +1138,7 @@ static int gcw0menu(void)
 		}
 			
     }//menu loop
-    if(gcw0menu_fullscreen) {
+    if(config.gcw0_fullscreen) {
         sdl_video.drect.w = sdl_video.srect.w;
         sdl_video.drect.h = sdl_video.srect.h;
         sdl_video.drect.x = 0;
