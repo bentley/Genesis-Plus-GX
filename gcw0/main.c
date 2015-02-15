@@ -897,7 +897,7 @@ static int gcw0menu(void)
         uint8 *keystate2 = SDL_GetKeyState(NULL);
         if(keystate2[SDLK_DOWN])
         {
-	        if(selectedoption > 9 && selectedoption < 13) { //graphics menu
+	        if(selectedoption > 9 && selectedoption < 14) { //graphics menu
 	            selectedoption++;
 	    	    if (selectedoption == 14) selectedoption = 10;
     	    } else if (selectedoption > 13 && selectedoption < 23) //remap menu
@@ -918,8 +918,9 @@ static int gcw0menu(void)
         
     	    if(selectedoption > 9 && selectedoption < 14) //graphics menu
             { 
-	        	if (selectedoption == 10)    selectedoption = 13;
-		        else                         selectedoption--;
+			selectedoption--;
+	        	if (selectedoption == 9)    selectedoption = 13;
+//		        else                         selectedoption--;
     	    } else if (selectedoption > 13 && selectedoption < 23) //remap menu
     	    {
 				if (selectedoption == 14)    selectedoption = 22;
@@ -1017,16 +1018,16 @@ static int gcw0menu(void)
             	do_once = 1;
        	    }
             else if (selectedoption == 12) 
+            { //Scanlines (GG)
+                SDL_Delay(130);
+           	gg_scanlines = !gg_scanlines;
+       	    }
+            else if (selectedoption == 13) 
   	    { //Back to main menu
                 menustate = MAINMENU;
            	selectedoption = 3;
        	        SDL_Delay(130);
             }
-            else if (selectedoption == 13) 
-            { //Scanlines (GG)
-                SDL_Delay(130);
-           	gg_scanlines = !gg_scanlines;
-       	    }
             else if (selectedoption == 14)
             {
 				//button a remap
