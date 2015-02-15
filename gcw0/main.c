@@ -1046,6 +1046,8 @@ static int gcw0menu(void)
 				pressed_key = SDLK_TAB;
 			} else if (keystate2[SDLK_BACKSPACE]) {
 				pressed_key = SDLK_BACKSPACE;
+			} else if (keystate2[SDLK_ESCAPE]) {
+				pressed_key = SDLK_ESCAPE;
 			}
 			
 			
@@ -1054,56 +1056,56 @@ static int gcw0menu(void)
 				if (selectedoption == 20)
 				{
 					//button a remap
-					config.buttons[A] = pressed_key;
+					config.buttons[A] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
 				else if (selectedoption == 21)
 				{
 					//button b remap
-					config.buttons[B] = pressed_key;
+					config.buttons[B] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
 				else if (selectedoption == 22)
 				{
 					//button c remap
-					config.buttons[C] = pressed_key;
+					config.buttons[C] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
 				else if (selectedoption == 23)
 				{
 					//button x remap
-					config.buttons[X] = pressed_key;
+					config.buttons[X] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
 				else if (selectedoption == 24)
 				{
 					//button y remap
-					config.buttons[Y] = pressed_key;
+					config.buttons[Y] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
 				else if (selectedoption == 25)
 				{
 					//button z remap
-					config.buttons[Z] = pressed_key;
+					config.buttons[Z] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
 				else if (selectedoption == 26)
 				{
 					//button start remap
-					config.buttons[START] = pressed_key;
+					config.buttons[START] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
 				else if (selectedoption == 27)
 				{
 					//button mode remap
-					config.buttons[MODE] = pressed_key;
+					config.buttons[MODE] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
 					SDL_Delay(130);
 					selectedoption++;
 				}
