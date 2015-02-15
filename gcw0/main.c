@@ -850,14 +850,21 @@ static int gcw0menu(void)
         {
 			char* remap_text[256];
 			ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
+			
+			sprintf(remap_text, "%s%25s", "GenPlus", "GCW-Zero");
+			SDL_Rect destination = {30, 60, 100, 50};
+			textSurface = TTF_RenderText_Solid(ttffont, remap_text, text_color);
+			SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+            SDL_FreeSurface(textSurface);
+			
             for(i=0; i < 9; i++)
             {
 				if (i < 8) {
-					sprintf(remap_text, "%s%15s", gcw0menu_remapoptionslist[i], gcw0_get_key_name(config.buttons[i]));
+					sprintf(remap_text, "%s%25s", gcw0menu_remapoptionslist[i], gcw0_get_key_name(config.buttons[i]));
 				} else {
 					sprintf(remap_text, gcw0menu_remapoptionslist[i]); // for return option
 				}
-                SDL_Rect destination = {30, 60 + (15 * i), 100, 50};
+                SDL_Rect destination = {30, 80 + (15 * i), 100, 50};
                 if ((i+20) == selectedoption) {
 					textSurface = TTF_RenderText_Solid(ttffont, remap_text, selected_text_color);
 				} else {
@@ -1057,6 +1064,7 @@ static int gcw0menu(void)
 				{
 					//button a remap
 					config.buttons[A] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+					config_save();
 					SDL_Delay(130);
 					selectedoption++;
 				}
@@ -1064,6 +1072,7 @@ static int gcw0menu(void)
 				{
 					//button b remap
 					config.buttons[B] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+					config_save();
 					SDL_Delay(130);
 					selectedoption++;
 				}
@@ -1071,6 +1080,7 @@ static int gcw0menu(void)
 				{
 					//button c remap
 					config.buttons[C] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+					config_save();
 					SDL_Delay(130);
 					selectedoption++;
 				}
@@ -1078,6 +1088,7 @@ static int gcw0menu(void)
 				{
 					//button x remap
 					config.buttons[X] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+					config_save();
 					SDL_Delay(130);
 					selectedoption++;
 				}
@@ -1085,6 +1096,7 @@ static int gcw0menu(void)
 				{
 					//button y remap
 					config.buttons[Y] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+					config_save();
 					SDL_Delay(130);
 					selectedoption++;
 				}
@@ -1092,6 +1104,7 @@ static int gcw0menu(void)
 				{
 					//button z remap
 					config.buttons[Z] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+					config_save();
 					SDL_Delay(130);
 					selectedoption++;
 				}
@@ -1099,6 +1112,7 @@ static int gcw0menu(void)
 				{
 					//button start remap
 					config.buttons[START] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+					config_save();
 					SDL_Delay(130);
 					selectedoption++;
 				}
@@ -1106,6 +1120,7 @@ static int gcw0menu(void)
 				{
 					//button mode remap
 					config.buttons[MODE] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+					config_save();
 					SDL_Delay(130);
 					selectedoption++;
 				}

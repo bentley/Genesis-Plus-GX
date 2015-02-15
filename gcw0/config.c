@@ -112,7 +112,7 @@ void config_save(void)
     /* open configuration file */
     char fname[MAXPATHLEN];
     sprintf (fname, "%s%s/config.ini", homedir, DEFAULT_PATH);
-    printf(fname);
+    //printf(fname);
     FILE *fp = fopen(fname, "wb");
     if (fp)
     {
