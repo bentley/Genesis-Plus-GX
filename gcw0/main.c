@@ -316,7 +316,7 @@ static void sdl_video_update()
     {
         SDL_Surface *scanlinesSurface;
         scanlinesSurface = IMG_Load("./scanlines.png");
-        SDL_BlitSurface(scanlinesSurface, NULL, sdl_video.surf_screen, NULL);
+        SDL_BlitSurface(scanlinesSurface, NULL, sdl_video.surf_screen, &sdl_video.drect);
 	SDL_FreeSurface(scanlinesSurface);
     }
 #endif
