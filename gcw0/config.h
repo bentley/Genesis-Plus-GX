@@ -50,6 +50,8 @@ typedef struct
   uint8 render;
   t_input_config input[MAX_INPUTS];
   uint8 gcw0_fullscreen;
+  uint8 keepaspectratio;
+  uint8 gg_scanlines;
   SDLKey buttons[8];
   //SDLKey button_a;
   //SDLKey button_b;

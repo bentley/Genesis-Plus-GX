@@ -16,9 +16,9 @@
 #include <SDL_ttf.h>
 #include <SDL_image.h>
 /* Configuration variables */
-static int gcw0menu_fullscreen = 1; //scaling: 0=off, 1=on
-static int keepaspectratio     = 1; //keep aspect ratio: 1=off, 0=on (may break with future firmware updates)
-static int gg_scanlines        = 1; //game gear scanlines: 1=on, 0=off
+//static int gcw0menu_fullscreen = 1; //scaling: 0=off, 1=on
+//static int keepaspectratio     = 1; //keep aspect ratio: 1=off, 0=on (may break with future firmware updates)
+//static int gg_scanlines        = 1; //game gear scanlines: 1=on, 0=off
 
 static int do_once = 1;
 static int gcw0_w;
@@ -312,7 +312,7 @@ static void sdl_video_update()
     //SDL_UpdateRect(sdl_video.surf_screen, 0, 0, 0, 0);
  
  #ifdef GCWZERO
-    if ((system_hw == SYSTEM_GG) && gg_scanlines)
+    if ((system_hw == SYSTEM_GG) && config.gg_scanlines)
     {
         SDL_Surface *scanlinesSurface;
         scanlinesSurface = IMG_Load("./scanlines.png");
@@ -829,17 +829,17 @@ static int gcw0menu(void)
 	        destination.h = 50;
 //          Scaling
             destination.y = 70+(15*0);
-            textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[gcw0menu_fullscreen], selected_text_color);
+            textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.gcw0_fullscreen], selected_text_color);
     	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
 	        SDL_FreeSurface(textSurface);
 //          Aspect ratio
             destination.y = 70+(15*1);
-    	    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[keepaspectratio], selected_text_color);
+    	    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.keepaspectratio], selected_text_color);
 	        SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
 	        SDL_FreeSurface(textSurface);
 //	        Scanlines
             destination.y = 70+(15*2);
-    	    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[gg_scanlines], selected_text_color);
+    	    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.gg_scanlines], selected_text_color);
 	        SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
 	        SDL_FreeSurface(textSurface);
 
@@ -1015,19 +1015,22 @@ static int gcw0menu(void)
             }
     	    else if (selectedoption == 10) 
 	        { //Scaling
-           	    gcw0menu_fullscreen = !gcw0menu_fullscreen;
+           	    config.gcw0_fullscreen = !config.gcw0_fullscreen;
                 SDL_Delay(130);
-    	    }
+                config_save();
+            }
             else if (selectedoption == 11) 
             { //Keep aspect ratio
                 SDL_Delay(130);
-           	    keepaspectratio = !keepaspectratio;
-            	do_once = 1;
+           	    config.keepaspectratio = !config.keepaspectratio;
+                config_save();
+                do_once = 1;
        	    }
             else if (selectedoption == 12) 
             { //Scanlines (GG)
                 SDL_Delay(130);
-           	gg_scanlines = !gg_scanlines;
+           	    config.gg_scanlines = !config.gg_scanlines;
+                config_save();
        	    }
             else if (selectedoption == 13) 
   	    { //Back to main menu
@@ -1584,7 +1587,7 @@ int main (int argc, char **argv)
     	if (do_once) 
         {
 	        do_once--; //don't waste write cycles!
-	        if (keepaspectratio)
+	        if (config.keepaspectratio)
 	        {
 		        FILE* aspect_ratio_file = fopen("/sys/devices/platform/jz-lcd.0/keep_aspect_ratio", "w");
 	        	if (aspect_ratio_file)
@@ -1593,7 +1596,7 @@ int main (int argc, char **argv)
 			        fclose(aspect_ratio_file);
         		}
             }
-            if (!keepaspectratio)
+            if (!config.keepaspectratio)
     	    {
 	        	FILE* aspect_ratio_file = fopen("/sys/devices/platform/jz-lcd.0/keep_aspect_ratio", "w");
 		        if (aspect_ratio_file)
