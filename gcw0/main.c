@@ -650,8 +650,8 @@ static int gcw0menu(void)
     //int showgraphicsoptions   = 0;
     //int showremapoptions	= 0;
  
-    enum {MAINMENU = 0, GRAPHICS_OPTIONS, REMAP_OPTIONS};
-    int menustate  = MAINMENU;
+    enum {MAINMENU = 0, GRAPHICS_OPTIONS = 1, REMAP_OPTIONS = 2};
+    static int menustate  = MAINMENU;
     const char *gcw0menu_gfxlist[3]=
     {
         "Scaling",
@@ -893,7 +893,8 @@ static int gcw0menu(void)
             { 
 	        	if (selectedoption == 10)    selectedoption = 12;
 		        else                         selectedoption--;
-    	    } else { //main menu
+    	    } else 
+	    { //main menu
     	        if (!selectedoption)
 	                selectedoption = 7;
   	            else
@@ -902,25 +903,19 @@ static int gcw0menu(void)
     	    }
 	        SDL_Delay(100);
         }
-            if (!selectedoption)
-                selectedoption = 7;
-            else
-                selectedoption--;
-            if (selectedoption == 5) selectedoption = 4;
-            SDL_Delay(170);
-        }
 //	if(keystate2[SDLK_LALT]) {
 //	    break;
 //	}
         if(keystate2[SDLK_LCTRL])
         {
-	        if (selectedoption == 0) { //Resume
-		        gotomenu=0;
-	        	selectedoption=0;
-	            SDL_Delay(130);
-	            break;
-            } else
-            if (selectedoption == 1)   //Save
+	    if (selectedoption == 0) 
+	    { //Resume
+	        gotomenu=0;
+	        selectedoption=0;
+	        SDL_Delay(130);
+	        break;
+            }
+            else if (selectedoption == 1)   //Save
             {
                 char save_state_file[256];
                 sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc);
@@ -934,8 +929,8 @@ static int gcw0menu(void)
                 }
                 SDL_Delay(130);
                 break;
-            } else
-            if (selectedoption == 2)   //Load
+            }
+            else if (selectedoption == 2)   //Load
             {
                 char save_state_file[256];
                 sprintf(save_state_file,"%s/%X.gp0", get_save_directory(), crc );
@@ -950,54 +945,51 @@ static int gcw0menu(void)
                 selectedoption=0;
                 SDL_Delay(130);
                 break;
-            } else
-            if (selectedoption == 3)   //Graphics
+            }
+            else if (selectedoption == 3)   //Graphics
             {
-                menustate == GRAPHICS_OPTIONS;
-//        		gfxmenu        = 1;
-//		        showmainmenu   = 0;
-	        	selectedoption = 10;
-	            SDL_Delay(200);
-            } else 
-            if (selectedoption == 4)   //Remap
+                menustate = GRAPHICS_OPTIONS;
+//      	gfxmenu        = 1;
+//	        showmainmenu   = 0;
+	       	selectedoption = 10;
+	        SDL_Delay(200);
+            }
+	    else if (selectedoption == 4)   //Remap
             {
 //TODO
-				menustate = REMAP_OPTIONS;
+		menustate = REMAP_OPTIONS;
                 selectedoption=0;
-            } else
-            if (selectedoption == 4)   //Resume
-            {
-                selectedoption=0;
-                SDL_Delay(130);
-                break;
-            } else
-            if (selectedoption == 6)   //Reset
+            }
+            else if (selectedoption == 6)   //Reset
             {
                 selectedoption=0;
                 system_reset();
                 SDL_Delay(130);
                 break;
             }
-            if (selectedoption == 7)   //Quit
+            else if (selectedoption == 7)   //Quit
             {
                 exit(0);
                 SDL_Delay(130);
                 break;
             }
-    	    if (selectedoption == 10) { //Scaling
-	        	gcw0menu_fullscreen = !gcw0menu_fullscreen;//toggle
-	            SDL_Delay(130);
-    	    } else
-            if (selectedoption == 11) { //Keep aspect ratio
+    	    else if (selectedoption == 10) 
+	    { //Scaling
+	       	gcw0menu_fullscreen = !gcw0menu_fullscreen;
+	        SDL_Delay(130);
+    	    }
+            else if (selectedoption == 11) 
+	    { //Keep aspect ratio
                 SDL_Delay(130);
-           		keepaspectratio = !keepaspectratio;
+           	keepaspectratio = !keepaspectratio;
             	do_once = 1;
-       	    } else
-            if (selectedoption == 12) { //Back to main menu
-                menustate == GRAPHICS_OPTIONS;
-//	            showmainmenu   = 1;
-//         		gfxmenu        = 0;
-           		selectedoption = 3;
+       	    }
+            else if (selectedoption == 12) 
+  	    { //Back to main menu
+                menustate = MAINMENU;
+//	        showmainmenu   = 1;
+//        	gfxmenu        = 0;
+           	selectedoption = 3;
        	        SDL_Delay(130);
             }
         }
