@@ -15,10 +15,6 @@
 #ifdef GCWZERO
 #include <SDL_ttf.h>
 #include <SDL_image.h>
-/* Configuration variables */
-//static int gcw0menu_fullscreen = 1; //scaling: 0=off, 1=on
-//static int keepaspectratio     = 1; //keep aspect ratio: 1=off, 0=on (may break with future firmware updates)
-//static int gg_scanlines        = 1; //game gear scanlines: 1=on, 0=off
 
 static int do_once = 1;
 static int gcw0_w;
@@ -215,14 +211,38 @@ static void sdl_video_update()
         bitmap.viewport.changed &= ~1;
  
         /* source bitmap */
+#ifdef GCWZERO //remove left bar bug with SMS roms
+        if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) )
+        {
+            sdl_video.srect.x = 8;
+        }
+        else
+        {
+            sdl_video.srect.x = 0;
+        }
+#else
+            sdl_video.srect.x = 0;
+#endif
+        sdl_video.srect.y = 0;
         sdl_video.srect.w = bitmap.viewport.w+2*bitmap.viewport.x;
         sdl_video.srect.h = bitmap.viewport.h+2*bitmap.viewport.y;
-        sdl_video.srect.x = 0;
-        sdl_video.srect.y = 0;
         if (sdl_video.srect.w > VIDEO_WIDTH)
         {
+#ifdef GCWZERO
+            if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) )
+            {
+                sdl_video.srect.x = (sdl_video.srect.w - VIDEO_WIDTH) / 2 + 8;
+                sdl_video.srect.w = VIDEO_WIDTH;
+            }
+            else
+            {
+                sdl_video.srect.x = (sdl_video.srect.w - VIDEO_WIDTH) / 2;
+                sdl_video.srect.w = VIDEO_WIDTH;
+            }
+#else
             sdl_video.srect.x = (sdl_video.srect.w - VIDEO_WIDTH) / 2;
             sdl_video.srect.w = VIDEO_WIDTH;
+#endif
         }
         if (sdl_video.srect.h > VIDEO_HEIGHT)
         {
@@ -291,23 +311,44 @@ static void sdl_video_update()
     {
         if( (gcw0_w != sdl_video.drect.w) || (gcw0_h != sdl_video.drect.h) )
         {
-            sdl_video.drect.w = sdl_video.srect.w;
+            if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) )
+            {
+                sdl_video.srect.w = sdl_video.srect.w - 8;
+                sdl_video.drect.w = sdl_video.srect.w;
+                sdl_video.drect.x = 4;
+            }
+            else
+            {
+                sdl_video.drect.x = 0;
+                sdl_video.drect.w = sdl_video.srect.w;
+            }
+
             sdl_video.drect.h = sdl_video.srect.h;
-            sdl_video.drect.x = 0;
             sdl_video.drect.y = 0;
             gcw0_w=sdl_video.drect.w;
             gcw0_h=sdl_video.drect.h;
- 
+
+            if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) )
+            {
+                sdl_video.surf_screen  = SDL_SetVideoMode(256,192, 16, SDL_HWSURFACE |
+#ifdef SDL_TRIPLEBUF
+                                         SDL_TRIPLEBUF);
+#else
+                                         SDL_DOUBLEBUF);
+#endif
+            }
+            else
+            { 
             sdl_video.surf_screen  = SDL_SetVideoMode(gcw0_w,gcw0_h, 16, SDL_HWSURFACE |
 #ifdef SDL_TRIPLEBUF
                                      SDL_TRIPLEBUF);
 #else
                                      SDL_DOUBLEBUF);
 #endif
+            } 
         }
     }
 #endif
- 
     SDL_BlitSurface(sdl_video.surf_bitmap, &sdl_video.srect, sdl_video.surf_screen, &sdl_video.drect);
     //SDL_UpdateRect(sdl_video.surf_screen, 0, 0, 0, 0);
  
@@ -1141,20 +1182,32 @@ static int gcw0menu(void)
 			
     }//menu loop
     if(config.gcw0_fullscreen) {
-        sdl_video.drect.w = sdl_video.srect.w;
-        sdl_video.drect.h = sdl_video.srect.h;
-        sdl_video.drect.x = 0;
-        sdl_video.drect.y = 0;
-        gcw0_w=sdl_video.drect.w;
-        gcw0_h=sdl_video.drect.h;
-//      gcw0_w=320;
-//      gcw0_h=240;
-        sdl_video.surf_screen  = SDL_SetVideoMode(gcw0_w,gcw0_h, 16, SDL_HWSURFACE |  
+        if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) )
+        {
+            gcw0_w=sdl_video.drect.w;
+            gcw0_h=sdl_video.drect.h;
+            sdl_video.surf_screen  = SDL_SetVideoMode(256,192, 16, SDL_HWSURFACE |
 #ifdef SDL_TRIPLEBUF
-                                 SDL_TRIPLEBUF);
+                                     SDL_TRIPLEBUF);
 #else
-                                 SDL_DOUBLEBUF);
+                                     SDL_DOUBLEBUF);
 #endif
+        }
+        else
+        { 
+            sdl_video.drect.w = sdl_video.srect.w;
+            sdl_video.drect.h = sdl_video.srect.h;
+            sdl_video.drect.x = 0;
+            sdl_video.drect.y = 0;
+            gcw0_w=sdl_video.drect.w;
+            gcw0_h=sdl_video.drect.h;
+            sdl_video.surf_screen  = SDL_SetVideoMode(gcw0_w,gcw0_h, 16, SDL_HWSURFACE |
+#ifdef SDL_TRIPLEBUF
+                                     SDL_TRIPLEBUF);
+#else
+                                     SDL_DOUBLEBUF);
+#endif
+        } 
     } else {
     ;
     }
@@ -1588,15 +1641,15 @@ int main (int argc, char **argv)
 #ifdef GCWZERO
     	if (do_once) 
         {
-	        do_once--; //don't waste write cycles!
-	        if (config.keepaspectratio)
-	        {
-		        FILE* aspect_ratio_file = fopen("/sys/devices/platform/jz-lcd.0/keep_aspect_ratio", "w");
-	        	if (aspect_ratio_file)
-	        	{ 
-		        	fwrite("Y", 1, 1, aspect_ratio_file);
-			        fclose(aspect_ratio_file);
-        		}
+	    do_once--; //don't waste write cycles!
+	    if (config.keepaspectratio)
+	    {
+	        FILE* aspect_ratio_file = fopen("/sys/devices/platform/jz-lcd.0/keep_aspect_ratio", "w");
+	       	if (aspect_ratio_file)
+	       	{ 
+	        	fwrite("Y", 1, 1, aspect_ratio_file);
+		        fclose(aspect_ratio_file);
+        	}
             }
             if (!config.keepaspectratio)
     	    {
@@ -1608,7 +1661,7 @@ int main (int argc, char **argv)
 		        }
 	        }
 	    }
-	    if (gotomenu) 
+        if (gotomenu) 
         {
 	        gcw0menu();
     	}
