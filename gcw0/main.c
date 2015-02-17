@@ -353,7 +353,7 @@ static void sdl_video_update()
     //SDL_UpdateRect(sdl_video.surf_screen, 0, 0, 0, 0);
  
  #ifdef GCWZERO
-    if ((system_hw == SYSTEM_GG) && config.gg_scanlines)
+    if ( (system_hw == SYSTEM_GG) && config.gg_scanlines)
     {
         SDL_Surface *scanlinesSurface;
         scanlinesSurface = IMG_Load("./scanlines.png");
@@ -764,7 +764,7 @@ static int gcw0menu(void)
             SDL_FreeSurface(tempbgSurface);
             SDL_FreeSurface(bgSurface);
         }
-        else if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) ) //Mark III & Sega Master System I&II & Megadrive with power base converter
+        else if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || ( system_hw == SYSTEM_GGMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) ) //Mark III & Sega Master System I&II & Megadrive with power base converter
         {
             SDL_Surface *tempbgSurface;
             SDL_Surface *bgSurface;
@@ -774,7 +774,7 @@ static int gcw0menu(void)
             SDL_FreeSurface(tempbgSurface);
             SDL_FreeSurface(bgSurface);
         }
-        else if (  system_hw == SYSTEM_GG)   //Game gear
+        else if (system_hw == SYSTEM_GG)
         {
             SDL_Surface *tempbgSurface;
             SDL_Surface *bgSurface;
@@ -878,7 +878,7 @@ static int gcw0menu(void)
     	    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.keepaspectratio], selected_text_color);
 	        SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
 	        SDL_FreeSurface(textSurface);
-//	        Scanlines
+//          Scanlines
             destination.y = 70+(15*2);
     	    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.gg_scanlines], selected_text_color);
 	        SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
