@@ -347,7 +347,7 @@ static void sdl_video_update()
 
             if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) )
             {
-                sdl_video.surf_screen  = SDL_SetVideoMode(256,192, 16, SDL_HWSURFACE |
+                sdl_video.surf_screen  = SDL_SetVideoMode(256,gcw0_h, 16, SDL_HWSURFACE |
 #ifdef SDL_TRIPLEBUF
                                          SDL_TRIPLEBUF);
 #else
@@ -1215,7 +1215,7 @@ static int gcw0menu(void)
         {
             gcw0_w=sdl_video.drect.w;
             gcw0_h=sdl_video.drect.h;
-            sdl_video.surf_screen  = SDL_SetVideoMode(256,192, 16, SDL_HWSURFACE |
+            sdl_video.surf_screen  = SDL_SetVideoMode(256,gcw0_h, 16, SDL_HWSURFACE |
 #ifdef SDL_TRIPLEBUF
                                      SDL_TRIPLEBUF);
 #else
