@@ -52,6 +52,7 @@ typedef struct
   uint8 gcw0_fullscreen;
   uint8 keepaspectratio;
   uint8 gg_scanlines;
+  uint8 smsmaskleftbar;
   SDLKey buttons[8];
   //SDLKey button_a;
   //SDLKey button_b;

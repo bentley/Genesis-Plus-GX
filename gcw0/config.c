@@ -67,14 +67,15 @@ void set_config_defaults(void)
     config.lcd            = 0; /* 0.8 fixed point */
 
     /* display options */
-    config.overscan = 0;       /* 3 = all borders (0 = no borders , 1 = vertical borders only, 2 = horizontal borders only) */
-    config.gg_extra = 0;       /* 1 = show extended Game Gear screen (256x192) */
-    config.render   = 0;       /* 1 = double resolution output (only when interlaced mode 2 is enabled) */
-    config.gcw0_fullscreen = 1; /* 1 = use IPU scalling */
-    config.keepaspectratio = 1; /* 1 = aspect ratio correct with black bars, 0 = fullscreen without correct aspect ratio */
-    config.gg_scanlines    = 1; /* 1 = use scanlines on Game Gear */
+    config.overscan            = 3; /* 3 = all borders (0 = no borders , 1 = vertical borders only, 2 = horizontal borders only) */
+    config.gg_extra            = 0; /* 1 = show extended Game Gear screen (256x192) */
+    config.render              = 0; /* 1 = double resolution output (only when interlaced mode 2 is enabled) */
+    config.gcw0_fullscreen     = 1; /* 1 = use IPU scaling */
+    config.keepaspectratio     = 1; /* 1 = aspect ratio correct with black bars, 0 = fullscreen without correct aspect ratio */
+    config.gg_scanlines        = 1; /* 1 = use scanlines on Game Gear */
+    config.smsmaskleftbar      = 1; /* 1 = Mask left bar on SMS (better for horizontal scrolling) */
 
-/* controllers options */
+    /* controllers options */
     input.system[0]       = SYSTEM_GAMEPAD;
     input.system[1]       = SYSTEM_GAMEPAD;
     config.gun_cursor[0]  = 1;

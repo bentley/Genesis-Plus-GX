@@ -214,7 +214,11 @@ static void sdl_video_update()
 #ifdef GCWZERO //remove left bar bug with SMS roms
         if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) )
         {
-            sdl_video.srect.x = 8;
+            if (config.smsmaskleftbar)
+                sdl_video.srect.x = 8;
+            else
+                sdl_video.srect.x = 0;
+
         }
         else
         {
@@ -231,7 +235,10 @@ static void sdl_video_update()
 #ifdef GCWZERO
             if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) )
             {
-                sdl_video.srect.x = (sdl_video.srect.w - VIDEO_WIDTH) / 2 + 8;
+                if (config.smsmaskleftbar)
+                    sdl_video.srect.x = (sdl_video.srect.w - VIDEO_WIDTH) / 2 + 8;
+                else
+                    sdl_video.srect.x = (sdl_video.srect.w - VIDEO_WIDTH) / 2;
                 sdl_video.srect.w = VIDEO_WIDTH;
             }
             else
@@ -313,9 +320,19 @@ static void sdl_video_update()
         {
             if ( (system_hw == SYSTEM_MARKIII) || (system_hw == SYSTEM_SMS) || (system_hw == SYSTEM_SMS2) || (system_hw == SYSTEM_PBC) )
             {
-                sdl_video.srect.w = sdl_video.srect.w - 8;
-                sdl_video.drect.w = sdl_video.srect.w;
-                sdl_video.drect.x = 4;
+                if (config.smsmaskleftbar)
+                {
+                    sdl_video.srect.w = sdl_video.srect.w - 8;
+                    sdl_video.drect.w = sdl_video.srect.w;
+                    sdl_video.drect.x = 4;
+                }
+                else
+                {
+                    sdl_video.srect.w = sdl_video.srect.w ;
+                    sdl_video.drect.w = sdl_video.srect.w;
+                    sdl_video.drect.x = 0;
+                }
+
             }
             else
             {
@@ -713,11 +730,12 @@ static int gcw0menu(void)
         "Reset",
         "Quit"
     };
-    const char *gcw0menu_gfxlist[4]=
+    const char *gcw0menu_gfxlist[5]=
     {
         "Scaling",
         "Keep aspect ratio",
         "Scanlines (GG)",
+        "Mask left bar (SMS)",
         "Return to main menu",
     };
     const char *gcw0menu_onofflist[2]=
@@ -849,7 +867,7 @@ static int gcw0menu(void)
         else if (menustate == GRAPHICS_OPTIONS)
         {
 			ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
-            for(i=0; i<4; i++)
+            for(i=0; i<5; i++)
             {
                 SDL_Rect destination;
                 destination.x = 100;
@@ -881,6 +899,11 @@ static int gcw0menu(void)
 //          Scanlines
             destination.y = 70+(15*2);
     	    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.gg_scanlines], selected_text_color);
+	        SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+	        SDL_FreeSurface(textSurface);
+//          Mask left bar
+            destination.y = 70+(15*3);
+    	    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.smsmaskleftbar], selected_text_color);
 	        SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
 	        SDL_FreeSurface(textSurface);
 
@@ -947,7 +970,7 @@ static int gcw0menu(void)
         {
             if(selectedoption > 9 && selectedoption < 20) { //graphics menu
                 selectedoption++;
-                if (selectedoption == 14) selectedoption = 10;
+                if (selectedoption == 15) selectedoption = 10;
     	    } else if (selectedoption > 19 && selectedoption < 30) //remap menu
     	    {
                  selectedoption++;
@@ -967,7 +990,7 @@ static int gcw0menu(void)
     	    if(selectedoption > 9 && selectedoption < 20) //graphics menu
             { 
 			selectedoption--;
-	        	if (selectedoption == 9)    selectedoption = 13;
+	        	if (selectedoption == 9)    selectedoption = 14;
 //		        else                         selectedoption--;
     	    } else if (selectedoption > 19 && selectedoption < 30) //remap menu
     	    {
@@ -1076,6 +1099,12 @@ static int gcw0menu(void)
                 config_save();
        	    }
             else if (selectedoption == 13) 
+            { //Mask left bar
+                SDL_Delay(130);
+           	    config.smsmaskleftbar = !config.smsmaskleftbar;
+                config_save();
+       	    }
+            else if (selectedoption == 14) 
   	    { //Back to main menu
                 menustate = MAINMENU;
            	selectedoption = 3;
