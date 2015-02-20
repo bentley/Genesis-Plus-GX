@@ -713,9 +713,6 @@ static int gcw0menu(void)
 #endif
 //  blank screen
     SDL_FillRect(sdl_video.surf_screen, 0, 0);
-//  set up menu surface
-    SDL_Surface *menuSurface = NULL;
-    menuSurface = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 16, 0, 0, 0, 0);
  
     enum {MAINMENU = 0, GRAPHICS_OPTIONS = 1, REMAP_OPTIONS = 2, SAVE_STATE = 3, LOAD_STATE = 4};
     static int menustate  = MAINMENU;
@@ -788,6 +785,9 @@ static int gcw0menu(void)
     bitmap.viewport.changed=1; //change screen res if required
     while(gotomenu)
     {
+//      set up menu surface
+        SDL_Surface *menuSurface = NULL;
+        menuSurface = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 16, 0, 0, 0, 0);
  
 //  identify system we are using to show correct background just cos we can :P
         if      (  system_hw == SYSTEM_PICO) //Sega Pico
@@ -987,9 +987,26 @@ static int gcw0menu(void)
                 SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
                 SDL_FreeSurface(textSurface);
             }
+            TTF_CloseFont (ttffont);
         }
         else if (menustate == LOAD_STATE)
         {
+          //Show saved BMP as background if available
+            SDL_Surface* screenshot;
+            char load_state_screenshot[256];
+            sprintf(load_state_screenshot,"%s/%X.%d.bmp", get_save_directory(), crc, selectedoption-40);
+            screenshot = SDL_LoadBMP(load_state_screenshot);
+            if (screenshot)
+            {
+                SDL_Rect destination;
+                destination.x = (320 - screenshot->w) / 2;
+                destination.y = (240 - screenshot->h) / 2;
+//(screenshot->h - 240) / 2;
+                destination.w = 320;
+                destination.h = 240;
+                SDL_BlitSurface(screenshot, NULL, menuSurface, &destination);
+            }
+            SDL_FreeSurface(screenshot);
             ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
             for(i=0; i<10; i++)
             {
@@ -1005,6 +1022,7 @@ static int gcw0menu(void)
                 SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
                 SDL_FreeSurface(textSurface);
             }
+            TTF_CloseFont (ttffont);
         }
 //TODO other menu's go here
  
@@ -1016,6 +1034,7 @@ static int gcw0menu(void)
         dest.x = 0;
         dest.y = 0;
         SDL_BlitSurface(menuSurface, NULL, sdl_video.surf_screen, &dest);
+        SDL_FreeSurface(menuSurface);
         SDL_Flip(sdl_video.surf_screen);
  
         /* Check for user input */
@@ -1219,6 +1238,23 @@ static int gcw0menu(void)
                     fwrite(&buf, len, 1, f);
                     fclose(f);
                 }
+
+              //Save BMP screenshot
+                char save_state_screenshot[256];
+                sprintf(save_state_screenshot,"%s/%X.%d.bmp", get_save_directory(), crc, selectedoption-30);
+                SDL_Surface* screenshot;
+                screenshot = SDL_CreateRGBSurface(SDL_HWSURFACE, gcw0_w, gcw0_h, 16, 0, 0, 0, 0);
+                SDL_Rect temp;
+                temp.x = 0;
+                temp.y = 0;
+                temp.w = gcw0_w;
+                temp.h = gcw0_h;
+
+                SDL_BlitSurface(sdl_video.surf_bitmap, &temp, screenshot, &temp);
+                SDL_SaveBMP(screenshot, save_state_screenshot);
+                SDL_FreeSurface(screenshot);
+//    SDL_Surface* surf_bitmap;
+
                 menustate = MAINMENU;
                 selectedoption = 0;
                 gotomenu = 0;
