@@ -714,16 +714,17 @@ static int gcw0menu(void)
 //  blank screen
     SDL_FillRect(sdl_video.surf_screen, 0, 0);
  
-    enum {MAINMENU = 0, GRAPHICS_OPTIONS = 1, REMAP_OPTIONS = 2, SAVE_STATE = 3, LOAD_STATE = 4};
+    enum {MAINMENU = 0, GRAPHICS_OPTIONS = 1, REMAP_OPTIONS = 2, SAVE_STATE = 3, LOAD_STATE = 4, MISC_OPTIONS = 5};
     static int menustate  = MAINMENU;
 //  Menu text
-    const char *gcw0menu_mainlist[8]=
+    const char *gcw0menu_mainlist[9]=
     {
         "Resume game",
         "Save state",
         "Load state",
         "Graphics options",
         "Remap buttons",
+        "Misc. Options",
             
         "", //spacer
         "Reset",
@@ -779,6 +780,11 @@ static int gcw0menu(void)
         "Load state 7",
         "Load state 8",
         "Load state 9",
+    };
+    const char *gcw0menu_misc[2]=
+    {
+        "Back to main menu",
+        "Resume on Save/Load",
     };
 
 //  start menu loop
@@ -862,21 +868,38 @@ static int gcw0menu(void)
         static int selectedoption = 0;
 
 //      Fill menu box
-        SDL_Surface *MenuBackground = SDL_CreateRGBSurface(SDL_HWSURFACE, 140, 185, 16, 0, 0, 0, 0);
-        SDL_Rect rect;
-        rect.x = 80;
-        rect.y = 35;
-        rect.w = 140;
-        rect.h = 185;
-        SDL_FillRect(MenuBackground, 0, 0);
-        SDL_SetAlpha(MenuBackground, SDL_SRCALPHA, 50);
-        SDL_BlitSurface(MenuBackground, NULL, menuSurface, &rect);
-        SDL_FreeSurface(MenuBackground);
+        SDL_Surface *MenuBackground;
+        if (menustate == REMAP_OPTIONS)
+        {
+            MenuBackground = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 185, 16, 0, 0, 0, 0);
+            SDL_Rect rect;
+            rect.x = 0;
+            rect.y = 35;
+            rect.w = 320;
+            rect.h = 185;
+            SDL_FillRect(MenuBackground, 0, 0);
+            SDL_SetAlpha(MenuBackground, SDL_SRCALPHA, 50);
+            SDL_BlitSurface(MenuBackground, NULL, menuSurface, &rect);
+            SDL_FreeSurface(MenuBackground);
+        }
+        else
+        {
+            MenuBackground = SDL_CreateRGBSurface(SDL_HWSURFACE, 180, 185, 16, 0, 0, 0, 0);
+            SDL_Rect rect;
+            rect.x = 60;
+            rect.y = 35;
+            rect.w = 180;
+            rect.h = 185;
+            SDL_FillRect(MenuBackground, 0, 0);
+            SDL_SetAlpha(MenuBackground, SDL_SRCALPHA, 50);
+            SDL_BlitSurface(MenuBackground, NULL, menuSurface, &rect);
+            SDL_FreeSurface(MenuBackground);
+        }
 
 //	Show title
         ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
         SDL_Rect destination;
-        destination.x = 100;
+        destination.x = 80;
         destination.y = 40;
         destination.w = 100;
         destination.h = 50;
@@ -887,12 +910,12 @@ static int gcw0menu(void)
  
         if (menustate == MAINMENU)
         {
-			// there's no need to open/close font each cycle :P
-			ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
-            for(i=0; i<8; i++)
+          //there's no need to open/close font each cycle :P
+            ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
+            for(i=0; i<9; i++)
             {
                 SDL_Rect destination;
-                destination.x = 100;
+                destination.x = 80;
                 destination.y = 70+(15*i);
                 destination.w = 100;
                 destination.h = 50;
@@ -911,7 +934,7 @@ static int gcw0menu(void)
             for(i=0; i<5; i++)
             {
                 SDL_Rect destination;
-                destination.x = 100;
+                destination.x = 80;
                 destination.y = 70+(15*i);
                 destination.w = 100;
                 destination.h = 50;
@@ -1000,11 +1023,11 @@ static int gcw0menu(void)
                 SDL_BlitSurface(screenshot, NULL, menuSurface, &destination);
 
 //              Fill menu box
-                SDL_Surface *MenuBackground = SDL_CreateRGBSurface(SDL_HWSURFACE, 140, 185, 16, 0, 0, 0, 0);
+                SDL_Surface *MenuBackground = SDL_CreateRGBSurface(SDL_HWSURFACE, 180, 185, 16, 0, 0, 0, 0);
                 SDL_Rect rect;
-                rect.x = 80;
+                rect.x = 60;
                 rect.y = 35;
-                rect.w = 140;
+                rect.w = 180;
                 rect.h = 185;
                 SDL_FillRect(MenuBackground, 0, 0);
                 SDL_SetAlpha(MenuBackground, SDL_SRCALPHA, 180);
@@ -1016,7 +1039,7 @@ static int gcw0menu(void)
 //          Show title
             ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
             SDL_Rect destination;
-            destination.x = 100;
+            destination.x = 80;
             destination.y = 40;
             destination.w = 100;
             destination.h = 50;
@@ -1029,7 +1052,7 @@ static int gcw0menu(void)
             for(i=0; i<10; i++)
             {
                 SDL_Rect destination;
-                destination.x = 100;
+                destination.x = 80;
                 destination.y = 70+(15*i);
                 destination.w = 100;
                 destination.h = 50;
@@ -1059,11 +1082,11 @@ static int gcw0menu(void)
                 SDL_BlitSurface(screenshot, NULL, menuSurface, &destination);
 
 //              Fill menu box
-                SDL_Surface *MenuBackground = SDL_CreateRGBSurface(SDL_HWSURFACE, 140, 185, 16, 0, 0, 0, 0);
+                SDL_Surface *MenuBackground = SDL_CreateRGBSurface(SDL_HWSURFACE, 180, 185, 16, 0, 0, 0, 0);
                 SDL_Rect rect;
-                rect.x = 80;
+                rect.x = 60;
                 rect.y = 35;
-                rect.w = 140;
+                rect.w = 180;
                 rect.h = 185;
                 SDL_FillRect(MenuBackground, 0, 0);
                 SDL_SetAlpha(MenuBackground, SDL_SRCALPHA, 180);
@@ -1075,7 +1098,7 @@ static int gcw0menu(void)
 //          Show title
             ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
             SDL_Rect destination;
-            destination.x = 100;
+            destination.x = 80;
             destination.y = 40;
             destination.w = 100;
             destination.h = 50;
@@ -1088,7 +1111,7 @@ static int gcw0menu(void)
             for(i=0; i<10; i++)
             {
                 SDL_Rect destination;
-                destination.x = 100;
+                destination.x = 80;
                 destination.y = 70+(15*i);
                 destination.w = 100;
                 destination.h = 50;
@@ -1101,6 +1124,38 @@ static int gcw0menu(void)
             }
             TTF_CloseFont (ttffont);
         }
+        else if (menustate == MISC_OPTIONS)
+        {
+            ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
+            for(i=0; i<2; i++)
+            {
+                SDL_Rect destination;
+                destination.x = 80;
+                destination.y = 70+(15*i);
+                destination.w = 100;
+                destination.h = 50;
+                if ((i+50) == selectedoption)
+		            textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_misc[i], selected_text_color);
+		        else
+		            textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_misc[i], text_color);
+                SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+                SDL_FreeSurface(textSurface);
+            }
+            /* Display On/Off */
+            SDL_Rect destination;
+	        destination.x = 220;
+	        destination.w = 100; 
+	        destination.h = 50;
+//          Save/load autoresume
+            destination.y = 70+(15*1);
+            textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.sl_autoresume], selected_text_color);
+    	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+            SDL_FreeSurface(textSurface);
+
+            TTF_CloseFont (ttffont);
+
+        }
+
 //TODO other menu's go here
  
  
@@ -1115,8 +1170,8 @@ static int gcw0menu(void)
         SDL_Flip(sdl_video.surf_screen);
  
         /* Check for user input */
-SDL_EnableKeyRepeat(0,0);
-static int keyheld=0;
+        SDL_EnableKeyRepeat(0,0);
+        static int keyheld=0;
         SDL_Event event;
         while(SDL_PollEvent(&event))
         {
@@ -1159,11 +1214,16 @@ static int keyheld=0;
                     selectedoption++;
                     if (selectedoption == 50)    selectedoption = 40;
                 } 
+                else if (selectedoption > 49 && selectedoption < 60) //misc menu
+    	        {
+                    selectedoption++;
+                    if (selectedoption == 52)    selectedoption = 50;
+                } 
                 else  //main menu
                 {
                     selectedoption++;
-                    if (selectedoption == 5)     selectedoption = 6;
-	            if (selectedoption>7)	     selectedoption=0;
+                    if (selectedoption == 6)     selectedoption = 7;
+	            if (selectedoption > 8)	     selectedoption=0;
     	        }
                 SDL_Delay(100);
     	    }
@@ -1189,11 +1249,16 @@ static int keyheld=0;
                     selectedoption--;
                     if (selectedoption == 39)    selectedoption = 49;
                 }
+                else if (selectedoption > 49 && selectedoption < 60) //load menu
+                {
+                    selectedoption--;
+                    if (selectedoption == 49)    selectedoption = 51;
+                }
                 else
     	        { //main menu
-    	            if (!selectedoption)         selectedoption = 7;
+    	            if (!selectedoption)         selectedoption = 8;
   	            else                         selectedoption--;
-	            if (selectedoption == 5)     selectedoption = 4;
+	            if (selectedoption == 6)     selectedoption = 5;
     	        }
                 SDL_Delay(100);
             }
@@ -1264,7 +1329,13 @@ static int keyheld=0;
                     selectedoption=20;
                     SDL_Delay(200);
                 }
-                else if (selectedoption == 6)   //Reset
+                else if (selectedoption == 5)   //Misc.
+                {
+                    menustate = MISC_OPTIONS;
+                    selectedoption=50;
+                    SDL_Delay(200);
+                }
+                else if (selectedoption == 7)   //Reset
                 {
                     gotomenu = 0;
                     selectedoption=0;
@@ -1272,7 +1343,7 @@ static int keyheld=0;
                     SDL_Delay(130);
                     break;
                 }
-                else if (selectedoption == 7)   //Quit
+                else if (selectedoption == 8)   //Quit
                 {
                     exit(0);
                     SDL_Delay(130);
@@ -1362,11 +1433,13 @@ static int keyheld=0;
                     }
 
                     SDL_Delay(250);
-                    menustate = MAINMENU;
-                    selectedoption = 0;
-                    gotomenu = 0;
-                    break;
-
+                    if (config.sl_autoresume)
+                    {
+                        menustate = MAINMENU;
+                        selectedoption = 0;
+                        gotomenu = 0;
+                        break;
+                    }
                 }
                 else if (selectedoption == 40)
                 {
@@ -1388,12 +1461,28 @@ static int keyheld=0;
                         state_load(buf);
                         fclose(f);
                     }
-                    gotomenu = 0;
+                    if (config.sl_autoresume)
+                    {
+                        gotomenu = 0;
+                        menustate = MAINMENU;
+                        selectedoption = 0;
+                        SDL_Delay(250);
+                        break;
+                    }
+                }
+                else if (selectedoption == 50)
+                {
+                  //return to main menu
                     menustate = MAINMENU;
-                    selectedoption = 0;
-                    SDL_Delay(250);
-                    break;
-
+                    selectedoption = 5;
+                    SDL_Delay(130);
+                }
+                else if (selectedoption == 51)
+                {
+                  //toggle auto resume when save/loading
+                    config.sl_autoresume=!config.sl_autoresume;
+                    config_save();
+                    SDL_Delay(130);
                 }
 
             }

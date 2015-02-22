@@ -53,6 +53,7 @@ typedef struct
   uint8 keepaspectratio;
   uint8 gg_scanlines;
   uint8 smsmaskleftbar;
+  uint8 sl_autoresume;
   SDLKey buttons[8];
   //SDLKey button_a;
   //SDLKey button_b;
