@@ -788,11 +788,20 @@ static int gcw0menu(void)
         "Load state 8",
         "Load state 9",
     };
-    const char *gcw0menu_misc[2]=
+    const char *gcw0menu_misc[3]=
     {
         "Back to main menu",
         "Resume on Save/Load",
+        "Lock-on",
     };
+
+    const char *lock_on_desc[4]=
+    {
+		"Off",
+		"Game Genie",
+		"Action Replay",
+		"Sonic & Knuckles",
+	};
 
 //  start menu loop
     bitmap.viewport.changed=1; //change screen res if required
@@ -1134,7 +1143,7 @@ static int gcw0menu(void)
         else if (menustate == MISC_OPTIONS)
         {
             ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
-            for(i=0; i<2; i++)
+            for(i=0; i<3; i++)
             {
                 SDL_Rect destination;
                 destination.x = 80;
@@ -1158,6 +1167,15 @@ static int gcw0menu(void)
             textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.sl_autoresume], selected_text_color);
     	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
             SDL_FreeSurface(textSurface);
+            
+            
+            /* Display Lock-on Types */
+            destination.x = 140;
+            destination.y = 70+(15*2);
+            textSurface = TTF_RenderText_Solid(ttffont, lock_on_desc[config.lock_on], selected_text_color);
+    	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+            SDL_FreeSurface(textSurface);
+            
 
             TTF_CloseFont (ttffont);
 
@@ -1223,7 +1241,7 @@ static int gcw0menu(void)
                 else if (selectedoption > 49 && selectedoption < 60) //misc menu
     	        {
                     selectedoption++;
-                    if (selectedoption == 52)    selectedoption = 50;
+                    if (selectedoption == 53)    selectedoption = 50;
                 } 
                 else  //main menu
                 {
@@ -1258,7 +1276,7 @@ static int gcw0menu(void)
                 else if (selectedoption > 49 && selectedoption < 60) //load menu
                 {
                     selectedoption--;
-                    if (selectedoption == 49)    selectedoption = 51;
+                    if (selectedoption == 49)    selectedoption = 52;
                 }
                 else
     	        { //main menu
@@ -1481,6 +1499,12 @@ static int gcw0menu(void)
                 {
                   //toggle auto resume when save/loading
                     config.sl_autoresume=!config.sl_autoresume;
+                    config_save();
+                    SDL_Delay(130);
+                }
+                else if (selectedoption == 52)
+                {
+					config.lock_on = (++config.lock_on == 4)? 0 : config.lock_on;
                     config_save();
                     SDL_Delay(130);
                 }
