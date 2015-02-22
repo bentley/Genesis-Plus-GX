@@ -17,8 +17,8 @@
 #include <SDL_image.h>
 
 static int do_once = 1;
-static int gcw0_w;
-static int gcw0_h;
+static int gcw0_w = 320;
+static int gcw0_h = 240;
 static int gotomenu;
 #endif
 
@@ -850,16 +850,29 @@ static int gcw0menu(void)
             SDL_FreeSurface(tempbgSurface);
             SDL_FreeSurface(bgSurface);
         }
- 
+
 //      show menu
         TTF_Init();
         TTF_Font *ttffont = NULL;
         SDL_Color text_color = {180, 180, 180};
         SDL_Color selected_text_color = {23, 86, 155}; //selected colour = Sega blue ;)
         SDL_Surface *textSurface;
- 
+
         int i;
         static int selectedoption = 0;
+
+//      Fill menu box
+        SDL_Surface *MenuBackground = SDL_CreateRGBSurface(SDL_HWSURFACE, 140, 185, 16, 0, 0, 0, 0);
+        SDL_Rect rect;
+        rect.x = 80;
+        rect.y = 35;
+        rect.w = 140;
+        rect.h = 185;
+        SDL_FillRect(MenuBackground, 0, 0);
+        SDL_SetAlpha(MenuBackground, SDL_SRCALPHA, 100);
+        SDL_BlitSurface(MenuBackground, NULL, menuSurface, &rect);
+        SDL_FreeSurface(MenuBackground);
+
 //	Show title
         ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
         SDL_Rect destination;
@@ -972,6 +985,46 @@ static int gcw0menu(void)
         }
         else if (menustate == SAVE_STATE)
         {
+          //Show saved BMP as background if available
+            SDL_Surface* screenshot;
+            char load_state_screenshot[256];
+            sprintf(load_state_screenshot,"%s/%X.%d.bmp", get_save_directory(), crc, selectedoption-30);
+            screenshot = SDL_LoadBMP(load_state_screenshot);
+            if (screenshot)
+            {
+                SDL_Rect destination;
+                destination.x = (320 - screenshot->w) / 2;
+                destination.y = (240 - screenshot->h) / 2;
+                destination.w = 320;
+                destination.h = 240;
+                SDL_BlitSurface(screenshot, NULL, menuSurface, &destination);
+            }
+            SDL_FreeSurface(screenshot);
+
+//          Fill menu box
+            SDL_Surface *MenuBackground = SDL_CreateRGBSurface(SDL_HWSURFACE, 140, 185, 16, 0, 0, 0, 0);
+            SDL_Rect rect;
+            rect.x = 80;
+            rect.y = 35;
+            rect.w = 140;
+            rect.h = 185;
+            SDL_FillRect(MenuBackground, 0, 0);
+            SDL_SetAlpha(MenuBackground, SDL_SRCALPHA, 100);
+            SDL_BlitSurface(MenuBackground, NULL, menuSurface, &rect);
+            SDL_FreeSurface(MenuBackground);
+
+//          Show title
+            ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
+            SDL_Rect destination;
+            destination.x = 100;
+            destination.y = 40;
+            destination.w = 100;
+            destination.h = 50;
+            textSurface = TTF_RenderText_Solid(ttffont, "Genesis Plus GX", text_color);
+            SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+            SDL_FreeSurface(textSurface);
+            TTF_CloseFont (ttffont);
+
             ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
             for(i=0; i<10; i++)
             {
@@ -1001,12 +1054,36 @@ static int gcw0menu(void)
                 SDL_Rect destination;
                 destination.x = (320 - screenshot->w) / 2;
                 destination.y = (240 - screenshot->h) / 2;
-//(screenshot->h - 240) / 2;
                 destination.w = 320;
                 destination.h = 240;
                 SDL_BlitSurface(screenshot, NULL, menuSurface, &destination);
             }
             SDL_FreeSurface(screenshot);
+
+//          Fill menu box
+            SDL_Surface *MenuBackground = SDL_CreateRGBSurface(SDL_HWSURFACE, 140, 185, 16, 0, 0, 0, 0);
+            SDL_Rect rect;
+            rect.x = 80;
+            rect.y = 35;
+            rect.w = 140;
+            rect.h = 185;
+            SDL_FillRect(MenuBackground, 0, 0);
+            SDL_SetAlpha(MenuBackground, SDL_SRCALPHA, 100);
+            SDL_BlitSurface(MenuBackground, NULL, menuSurface, &rect);
+            SDL_FreeSurface(MenuBackground);
+
+//          Show title
+            ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
+            SDL_Rect destination;
+            destination.x = 100;
+            destination.y = 40;
+            destination.w = 100;
+            destination.h = 50;
+            textSurface = TTF_RenderText_Solid(ttffont, "Genesis Plus GX", text_color);
+            SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+            SDL_FreeSurface(textSurface);
+            TTF_CloseFont (ttffont);
+
             ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
             for(i=0; i<10; i++)
             {
@@ -1038,6 +1115,8 @@ static int gcw0menu(void)
         SDL_Flip(sdl_video.surf_screen);
  
         /* Check for user input */
+SDL_EnableKeyRepeat(0,0);
+static int keyheld=0;
         SDL_Event event;
         while(SDL_PollEvent(&event))
         {
@@ -1046,347 +1125,375 @@ static int gcw0menu(void)
             case SDL_KEYDOWN:
                 sdl_control_update(event.key.keysym.sym);
                 break;
+            case SDL_KEYUP:
+                keyheld = 0;
+                break;
             default:
                 break;
             }
         }
-        uint8 *keystate2 = SDL_GetKeyState(NULL);
-        if(keystate2[SDLK_DOWN])
+        if (event.type == SDL_KEYDOWN && !keyheld)
         {
-            if        (selectedoption >  9 && selectedoption < 20) //graphics menu
+            keyheld++;
+            uint8 *keystate2;
+            keystate2 = SDL_GetKeyState(NULL);
+            if(keystate2[SDLK_DOWN])
             {
-                selectedoption++;
-                if (selectedoption == 15) selectedoption = 10;
-    	    } else if (selectedoption > 19 && selectedoption < 30) //remap menu
-    	    {
-                selectedoption++;
-                if (selectedoption == 29)    selectedoption = 20;
-    	    } else if (selectedoption > 29 && selectedoption < 40) //save menu
-    	    {
-                selectedoption++;
-                if (selectedoption == 40)    selectedoption = 30;
-    	    } else if (selectedoption > 39 && selectedoption < 50) //load menu
-    	    {
-                selectedoption++;
-                if (selectedoption == 50)    selectedoption = 40;
-            } else  //main menu
-            {
-                selectedoption++;
-                if (selectedoption == 5)     selectedoption = 6;
-	        if (selectedoption>7)	     selectedoption=0;
+                if        (selectedoption >  9 && selectedoption < 20) //graphics menu
+                {
+                    selectedoption++;
+                    if (selectedoption == 15) selectedoption = 10;
+                } 
+                else if (selectedoption > 19 && selectedoption < 30) //remap menu
+                {
+                    selectedoption++;
+                    if (selectedoption == 29)    selectedoption = 20;
+                } 
+                else if (selectedoption > 29 && selectedoption < 40) //save menu
+                {
+                    selectedoption++;
+                    if (selectedoption == 40)    selectedoption = 30;
+    	        } 
+                else if (selectedoption > 39 && selectedoption < 50) //load menu
+    	        {
+                    selectedoption++;
+                    if (selectedoption == 50)    selectedoption = 40;
+                } 
+                else  //main menu
+                {
+                    selectedoption++;
+                    if (selectedoption == 5)     selectedoption = 6;
+	            if (selectedoption>7)	     selectedoption=0;
+    	        }
+                SDL_Delay(100);
     	    }
-            SDL_Delay(100);
-    	}
-        if(keystate2[SDLK_UP])
-        {
-        
-    	    if        (selectedoption > 9  && selectedoption < 20) //graphics menu
-            { 
-                selectedoption--;
-                if (selectedoption == 9)     selectedoption = 14;
-    	    } else if (selectedoption > 19 && selectedoption < 30) //remap menu
-    	    {
-                selectedoption--;
-                if (selectedoption == 19)    selectedoption = 28;
-            } else if (selectedoption > 29 && selectedoption < 40) //save menu
+            else if(keystate2[SDLK_UP])
             {
-                selectedoption--;
-                if (selectedoption == 29)    selectedoption = 39;
-            } else if (selectedoption > 39 && selectedoption < 50) //load menu
-            {
-                selectedoption--;
-                if (selectedoption == 39)    selectedoption = 49;
-            } else
-    	    { //main menu
-    	        if (!selectedoption)
-	                selectedoption = 7;
-  	            else
-	                selectedoption--;
-	            if (selectedoption == 5) selectedoption = 4;
-    	    }
-            SDL_Delay(100);
-        }
-	if(keystate2[SDLK_LALT] && menustate != REMAP_OPTIONS) //back to last menu or quit menu
-        {
-            if (menustate == GRAPHICS_OPTIONS)
-            {
-                menustate = MAINMENU;
-                selectedoption = 3;
-                SDL_Delay(130);
+                if        (selectedoption > 9  && selectedoption < 20) //graphics menu
+                {
+                    selectedoption--;
+                    if (selectedoption == 9)     selectedoption = 14;
+    	        }
+                else if (selectedoption > 19 && selectedoption < 30) //remap menu
+    	        {
+                    selectedoption--;
+                    if (selectedoption == 19)    selectedoption = 28;
+                }
+                else if (selectedoption > 29 && selectedoption < 40) //save menu
+                {
+                    selectedoption--;
+                    if (selectedoption == 29)    selectedoption = 39;
+                }
+                else if (selectedoption > 39 && selectedoption < 50) //load menu
+                {
+                    selectedoption--;
+                    if (selectedoption == 39)    selectedoption = 49;
+                }
+                else
+    	        { //main menu
+    	            if (!selectedoption)         selectedoption = 7;
+  	            else                         selectedoption--;
+	            if (selectedoption == 5)     selectedoption = 4;
+    	        }
+                SDL_Delay(100);
             }
-            else if (menustate == SAVE_STATE)
+	    else if(keystate2[SDLK_LALT] && menustate != REMAP_OPTIONS) //back to last menu or quit menu
             {
-                menustate = MAINMENU;
-                selectedoption = 1;
-                SDL_Delay(130);
+                if (menustate == GRAPHICS_OPTIONS)
+                {
+                    menustate = MAINMENU;
+                    selectedoption = 3;
+                    SDL_Delay(130);
+                }
+                else if (menustate == SAVE_STATE)
+                {
+                    menustate = MAINMENU;
+                    selectedoption = 1;
+                    SDL_Delay(130);
+                }
+                else if (menustate == LOAD_STATE)
+                {
+                    menustate = MAINMENU;
+                    selectedoption = 2;
+                    SDL_Delay(130);
+                }
+                else if (menustate == MAINMENU)
+                {
+                    gotomenu=0;
+                    selectedoption=0;
+                    SDL_Delay(130);
+//                  sdl_sync.ticks = sdl_video.frames_rendered = 0;
+//                  audio_init(snd.sample_rate, 0);
+//                  event.user.code = 0;
+	            break;
+                }
             }
-            else if (menustate == LOAD_STATE)
+            else if(keystate2[SDLK_LCTRL] && menustate != REMAP_OPTIONS)
             {
-                menustate = MAINMENU;
-                selectedoption = 2;
-                SDL_Delay(130);
-            }
-            else if (menustate == MAINMENU)
-            {
-                gotomenu=0;
-                selectedoption=0;
-                SDL_Delay(130);
-//                sdl_sync.ticks = sdl_video.frames_rendered = 0;
-//                audio_init(snd.sample_rate, 0);
-//                event.user.code = 0;
-	        break;
-            }
-	}
-        if(keystate2[SDLK_LCTRL] && menustate != REMAP_OPTIONS)
-        {
-	    if (selectedoption == 0) 
-	    { //Resume
-	        gotomenu=0;
-	        selectedoption=0;
-	        SDL_Delay(130);
-//        audio_init(snd.sample_rate, 0);
-//        sdl_sync.ticks = sdl_video.frames_rendered = 0;
-//       event.user.code = 0;
-	        break;
-            }
-            else if (selectedoption == 1)   //Save
-            {
-                menustate = SAVE_STATE;
-                selectedoption = 30;
-                SDL_Delay(130);
-            }
-            else if (selectedoption == 2)   //Load
-            {
-                menustate = LOAD_STATE;
-                selectedoption = 40;
-                SDL_Delay(130);
-            }
-            else if (selectedoption == 3)   //Graphics
-            {
-                menustate = GRAPHICS_OPTIONS;
-     	       	selectedoption = 10;
+                if (selectedoption == 0) 
+	        { //Resume
+	            gotomenu=0;
+                    selectedoption=0;
+                    SDL_Delay(130);
+//                  audio_init(snd.sample_rate, 0);
+//                  sdl_sync.ticks = sdl_video.frames_rendered = 0;
+//                  event.user.code = 0;
+	            break;
+                }
+                else if (selectedoption == 1)   //Save
+                {
+                    menustate = SAVE_STATE;
+                    selectedoption = 30;
+                    SDL_Delay(130);
+                }
+                else if (selectedoption == 2)   //Load
+                {
+                    menustate = LOAD_STATE;
+                    selectedoption = 40;
+                    SDL_Delay(130);
+                }
+                else if (selectedoption == 3)   //Graphics
+                {
+                    menustate = GRAPHICS_OPTIONS;
+                    selectedoption = 10;
 	            SDL_Delay(200);
-            }
-	        else if (selectedoption == 4)   //Remap
-            {
-                menustate = REMAP_OPTIONS;
-                selectedoption=20;
-                SDL_Delay(200);
-            }
-            else if (selectedoption == 6)   //Reset
-            {
-                gotomenu = 0;
-                selectedoption=0;
-                system_reset();
-                SDL_Delay(130);
-                break;
-            }
-            else if (selectedoption == 7)   //Quit
-            {
-                exit(0);
-                SDL_Delay(130);
-                break;
-            }
-    	    else if (selectedoption == 10) 
-            { //Scaling
-                config.gcw0_fullscreen = !config.gcw0_fullscreen;
-                SDL_Delay(130);
-                config_save();
-            }
-            else if (selectedoption == 11) 
-            { //Keep aspect ratio
-                SDL_Delay(130);
-                config.keepaspectratio = !config.keepaspectratio;
-                config_save();
-                do_once = 1;
-       	    }
-            else if (selectedoption == 12) 
-            { //Scanlines (GG)
-                SDL_Delay(130);
-                config.gg_scanlines = !config.gg_scanlines;
-                config_save();
-       	    }
-            else if (selectedoption == 13) 
-            { //Mask left bar
-                SDL_Delay(130);
-                config.smsmaskleftbar = !config.smsmaskleftbar;
-                config_save();
-       	    }
-            else if (selectedoption == 14) 
-  	    { //Back to main menu
-                menustate = MAINMENU;
-                selectedoption = 3;
-       	        SDL_Delay(130);
-            }
-            else if (selectedoption == 30)
-            {
-              //Return to main menu
-                menustate = MAINMENU;
-                selectedoption = 1;
-                SDL_Delay(130);
-            }
-            else if (selectedoption > 30 && selectedoption < 40)
-            {
-              //save to selected savestate
-                char save_state_file[256];
-                sprintf(save_state_file,"%s/%X.gp%d", get_save_directory(), crc, selectedoption-30);
-                FILE *f = fopen(save_state_file,"wb");
-                if (f)
+                }
+                else if (selectedoption == 4)   //Remap
                 {
-                    uint8 buf[STATE_SIZE];
-                    int len = state_save(buf);
-                    fwrite(&buf, len, 1, f);
-                    fclose(f);
+                    menustate = REMAP_OPTIONS;
+                    selectedoption=20;
+                    SDL_Delay(200);
+                }
+                else if (selectedoption == 6)   //Reset
+                {
+                    gotomenu = 0;
+                    selectedoption=0;
+                    system_reset();
+                    SDL_Delay(130);
+                    break;
+                }
+                else if (selectedoption == 7)   //Quit
+                {
+                    exit(0);
+                    SDL_Delay(130);
+                    break;
+                }
+                else if (selectedoption == 10) 
+                { //Scaling
+                    config.gcw0_fullscreen = !config.gcw0_fullscreen;
+                    SDL_Delay(130);
+                    config_save();
+                }
+                else if (selectedoption == 11) 
+                { //Keep aspect ratio
+                    SDL_Delay(130);
+                    config.keepaspectratio = !config.keepaspectratio;
+                    config_save();
+                    do_once = 1;
+       	        }
+                else if (selectedoption == 12) 
+                { //Scanlines (GG)
+                    SDL_Delay(130);
+                    config.gg_scanlines = !config.gg_scanlines;
+                    config_save();
+                }
+                else if (selectedoption == 13) 
+                { //Mask left bar
+                    SDL_Delay(130);
+                    config.smsmaskleftbar = !config.smsmaskleftbar;
+                    config_save();
+                }
+                else if (selectedoption == 14) 
+                { //Back to main menu
+                    menustate = MAINMENU;
+                    selectedoption = 3;
+                    SDL_Delay(130);
+                }
+                else if (selectedoption == 30)
+                {
+                  //Return to main menu
+                    menustate = MAINMENU;
+                    selectedoption = 1;
+                    SDL_Delay(130);
+                }
+                else if (selectedoption > 30 && selectedoption < 40)
+                {
+                  //save to selected savestate
+                    char save_state_file[256];
+                    sprintf(save_state_file,"%s/%X.gp%d", get_save_directory(), crc, selectedoption-30);
+                    FILE *f = fopen(save_state_file,"wb");
+                    if (f)
+                    {
+                        uint8 buf[STATE_SIZE];
+                        int len = state_save(buf);
+                        fwrite(&buf, len, 1, f);
+                        fclose(f);
+                    }
+
+                  //Save BMP screenshot
+                    char save_state_screenshot[256];
+                    sprintf(save_state_screenshot,"%s/%X.%d.bmp", get_save_directory(), crc, selectedoption-30);
+                    SDL_Surface* screenshot;
+                    if (!config.gcw0_fullscreen)
+                    {
+                        screenshot = SDL_CreateRGBSurface(SDL_HWSURFACE, sdl_video.srect.w, sdl_video.srect.h, 16, 0, 0, 0, 0);
+                        SDL_Rect temp;
+                        temp.x = 0;
+                        temp.y = 0;
+                        temp.w = sdl_video.srect.w;
+                        temp.h = sdl_video.srect.h;
+
+                        SDL_BlitSurface(sdl_video.surf_bitmap, &temp, screenshot, &temp);
+                        SDL_SaveBMP(screenshot, save_state_screenshot);
+                        SDL_FreeSurface(screenshot);
+                    }
+                    else
+                    {
+                        screenshot = SDL_CreateRGBSurface(SDL_HWSURFACE, gcw0_w, gcw0_h, 16, 0, 0, 0, 0);
+                        SDL_Rect temp;
+                        temp.x = 0;
+                        temp.y = 0;
+                        temp.w = gcw0_w;
+                        temp.h = gcw0_h;
+
+                        SDL_BlitSurface(sdl_video.surf_bitmap, &temp, screenshot, &temp);
+                        SDL_SaveBMP(screenshot, save_state_screenshot);
+                        SDL_FreeSurface(screenshot);
+                    }
+
+                    SDL_Delay(250);
+                    menustate = MAINMENU;
+                    selectedoption = 0;
+                    gotomenu = 0;
+                    break;
+
+                }
+                else if (selectedoption == 40)
+                {
+                  //return to main menu
+                    menustate = MAINMENU;
+                    selectedoption = 2;
+                    SDL_Delay(130);
+                }
+                else if (selectedoption > 40 && selectedoption < 50)
+                {
+                  //load selected loadstate
+                    char save_state_file[256];
+                    sprintf(save_state_file,"%s/%X.gp%d", get_save_directory(), crc, selectedoption-40 );
+                    FILE *f = fopen(save_state_file,"rb");
+                    if (f)
+                    {
+                        uint8 buf[STATE_SIZE];
+                        fread(&buf, STATE_SIZE, 1, f);
+                        state_load(buf);
+                        fclose(f);
+                    }
+                    gotomenu = 0;
+                    menustate = MAINMENU;
+                    selectedoption = 0;
+                    SDL_Delay(250);
+                    break;
+
                 }
 
-              //Save BMP screenshot
-                char save_state_screenshot[256];
-                sprintf(save_state_screenshot,"%s/%X.%d.bmp", get_save_directory(), crc, selectedoption-30);
-                SDL_Surface* screenshot;
-                screenshot = SDL_CreateRGBSurface(SDL_HWSURFACE, gcw0_w, gcw0_h, 16, 0, 0, 0, 0);
-                SDL_Rect temp;
-                temp.x = 0;
-                temp.y = 0;
-                temp.w = gcw0_w;
-                temp.h = gcw0_h;
-
-                SDL_BlitSurface(sdl_video.surf_bitmap, &temp, screenshot, &temp);
-                SDL_SaveBMP(screenshot, save_state_screenshot);
-                SDL_FreeSurface(screenshot);
-//    SDL_Surface* surf_bitmap;
-
-                menustate = MAINMENU;
-                selectedoption = 0;
-                gotomenu = 0;
-                SDL_Delay(130);
-                break;
-
             }
-            else if (selectedoption == 40)
-            {
-              //return to main menu
-                menustate = MAINMENU;
-                selectedoption = 2;
-                SDL_Delay(130);
-            }
-            else if (selectedoption > 40 && selectedoption < 50)
-            {
-              //load selected loadstate
-                char save_state_file[256];
-                sprintf(save_state_file,"%s/%X.gp%d", get_save_directory(), crc, selectedoption-40 );
-                FILE *f = fopen(save_state_file,"rb");
-                if (f)
+            else if(menustate == REMAP_OPTIONS)
+            {// REMAP_OPTIONS needs to capture all input
+                SDLKey pressed_key = 0;
+
+                if (keystate2[SDLK_RETURN])
+                    pressed_key = SDLK_RETURN;
+                else if (keystate2[SDLK_LCTRL])
+                    pressed_key = SDLK_LCTRL;
+                else if (keystate2[SDLK_LALT]) 
+                    pressed_key = SDLK_LALT;
+                else if (keystate2[SDLK_LSHIFT]) 
+                    pressed_key = SDLK_LSHIFT;
+                else if (keystate2[SDLK_SPACE]) 
+                    pressed_key = SDLK_SPACE;
+                else if (keystate2[SDLK_TAB]) 
+                    pressed_key = SDLK_TAB;
+                else if (keystate2[SDLK_BACKSPACE]) 
+                    pressed_key = SDLK_BACKSPACE;
+                else if (keystate2[SDLK_ESCAPE]) 
+                    pressed_key = SDLK_ESCAPE;
+
+                if (pressed_key)
                 {
-                    uint8 buf[STATE_SIZE];
-                    fread(&buf, STATE_SIZE, 1, f);
-                    state_load(buf);
-                    fclose(f);
+                    if (selectedoption == 20)
+                    {
+                      //button a remap
+                        config.buttons[A] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+                        config_save();
+                        SDL_Delay(130);
+                        selectedoption++;
+                    }
+                    else if (selectedoption == 21)
+                    {
+                      //button b remap
+                        config.buttons[B] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+                        config_save();
+                        SDL_Delay(130);
+                        selectedoption++;
+                    }
+                    else if (selectedoption == 22)
+                    {
+                      //button c remap
+                        config.buttons[C] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+                        config_save();
+                        SDL_Delay(130);
+                        selectedoption++;
+                    }
+                    else if (selectedoption == 23)
+                    {
+                      //button x remap
+                        config.buttons[X] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+                        config_save();
+                        SDL_Delay(130);
+                        selectedoption++;
+                    }
+                    else if (selectedoption == 24)
+                    {
+                      //button y remap
+                        config.buttons[Y] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+                        config_save();
+                        SDL_Delay(130);
+                        selectedoption++;
+                    }
+                    else if (selectedoption == 25)
+                    {
+                      //button z remap
+                        config.buttons[Z] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+                        config_save();
+                        SDL_Delay(130);
+                        selectedoption++;
+                    }
+                    else if (selectedoption == 26)
+                    {
+                      //button start remap
+                        config.buttons[START] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+                        config_save();
+                        SDL_Delay(130);
+                        selectedoption++;
+                    }
+                    else if (selectedoption == 27)
+                    {
+                      //button mode remap
+                        config.buttons[MODE] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+                        config_save();
+                        SDL_Delay(130);
+                        selectedoption++;
+                    }
+                    else if (selectedoption == 28)
+                    {
+                      //return to main menu
+                        menustate = MAINMENU;
+                        selectedoption = 4;
+                        SDL_Delay(130);
+                    }
                 }
-                gotomenu = 0;
-                menustate = MAINMENU;
-                selectedoption = 0;
-                SDL_Delay(130);
-                break;
-
             }
-
-        } else if(menustate == REMAP_OPTIONS){// REMAP_OPTIONS needs to capture all input
-			SDLKey pressed_key = 0;
-
-			if (keystate2[SDLK_RETURN]) {
-				pressed_key = SDLK_RETURN;
-			} else if (keystate2[SDLK_LCTRL]) {
-				pressed_key = SDLK_LCTRL;
-			} else if (keystate2[SDLK_LALT]) {
-				pressed_key = SDLK_LALT;
-			} else if (keystate2[SDLK_LSHIFT]) {
-				pressed_key = SDLK_LSHIFT;
-			} else if (keystate2[SDLK_SPACE]) {
-				pressed_key = SDLK_SPACE;
-			} else if (keystate2[SDLK_TAB]) {
-				pressed_key = SDLK_TAB;
-			} else if (keystate2[SDLK_BACKSPACE]) {
-				pressed_key = SDLK_BACKSPACE;
-			} else if (keystate2[SDLK_ESCAPE]) {
-				pressed_key = SDLK_ESCAPE;
-			}
-
-			if (pressed_key)
-			{
-				if (selectedoption == 20)
-				{
-					//button a remap
-					config.buttons[A] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
-					config_save();
-					SDL_Delay(130);
-					selectedoption++;
-				}
-				else if (selectedoption == 21)
-				{
-					//button b remap
-					config.buttons[B] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
-					config_save();
-					SDL_Delay(130);
-					selectedoption++;
-				}
-				else if (selectedoption == 22)
-				{
-					//button c remap
-					config.buttons[C] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
-					config_save();
-					SDL_Delay(130);
-					selectedoption++;
-				}
-				else if (selectedoption == 23)
-				{
-					//button x remap
-					config.buttons[X] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
-					config_save();
-					SDL_Delay(130);
-					selectedoption++;
-				}
-				else if (selectedoption == 24)
-				{
-					//button y remap
-					config.buttons[Y] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
-					config_save();
-					SDL_Delay(130);
-					selectedoption++;
-				}
-				else if (selectedoption == 25)
-				{
-					//button z remap
-					config.buttons[Z] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
-					config_save();
-					SDL_Delay(130);
-					selectedoption++;
-				}
-				else if (selectedoption == 26)
-				{
-					//button start remap
-					config.buttons[START] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
-					config_save();
-					SDL_Delay(130);
-					selectedoption++;
-				}
-				else if (selectedoption == 27)
-				{
-					//button mode remap
-					config.buttons[MODE] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
-					config_save();
-					SDL_Delay(130);
-					selectedoption++;
-				}
-				else if (selectedoption == 28)
-				{
-					//return to main menu
-					menustate = MAINMENU;
-					selectedoption = 4;
-					SDL_Delay(130);
-				}
-			}
-		}
-			
+        }
     }//menu loop
     SDL_PauseAudio(0);
 
@@ -1418,7 +1525,12 @@ static int gcw0menu(void)
 #endif
         } 
     } else {
-    ;
+        SDL_FillRect(sdl_video.surf_screen, 0, 0);
+        SDL_Flip(sdl_video.surf_screen);
+        SDL_FillRect(sdl_video.surf_screen, 0, 0);
+        SDL_Flip(sdl_video.surf_screen);
+        SDL_FillRect(sdl_video.surf_screen, 0, 0);
+        SDL_Flip(sdl_video.surf_screen);
     }
     return 1;
 }
