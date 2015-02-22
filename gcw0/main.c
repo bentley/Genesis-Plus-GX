@@ -869,7 +869,7 @@ static int gcw0menu(void)
         rect.w = 140;
         rect.h = 185;
         SDL_FillRect(MenuBackground, 0, 0);
-        SDL_SetAlpha(MenuBackground, SDL_SRCALPHA, 100);
+        SDL_SetAlpha(MenuBackground, SDL_SRCALPHA, 50);
         SDL_BlitSurface(MenuBackground, NULL, menuSurface, &rect);
         SDL_FreeSurface(MenuBackground);
 
@@ -998,20 +998,20 @@ static int gcw0menu(void)
                 destination.w = 320;
                 destination.h = 240;
                 SDL_BlitSurface(screenshot, NULL, menuSurface, &destination);
+
+//              Fill menu box
+                SDL_Surface *MenuBackground = SDL_CreateRGBSurface(SDL_HWSURFACE, 140, 185, 16, 0, 0, 0, 0);
+                SDL_Rect rect;
+                rect.x = 80;
+                rect.y = 35;
+                rect.w = 140;
+                rect.h = 185;
+                SDL_FillRect(MenuBackground, 0, 0);
+                SDL_SetAlpha(MenuBackground, SDL_SRCALPHA, 180);
+                SDL_BlitSurface(MenuBackground, NULL, menuSurface, &rect);
+                SDL_FreeSurface(MenuBackground);
             }
             SDL_FreeSurface(screenshot);
-
-//          Fill menu box
-            SDL_Surface *MenuBackground = SDL_CreateRGBSurface(SDL_HWSURFACE, 140, 185, 16, 0, 0, 0, 0);
-            SDL_Rect rect;
-            rect.x = 80;
-            rect.y = 35;
-            rect.w = 140;
-            rect.h = 185;
-            SDL_FillRect(MenuBackground, 0, 0);
-            SDL_SetAlpha(MenuBackground, SDL_SRCALPHA, 100);
-            SDL_BlitSurface(MenuBackground, NULL, menuSurface, &rect);
-            SDL_FreeSurface(MenuBackground);
 
 //          Show title
             ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
@@ -1057,20 +1057,20 @@ static int gcw0menu(void)
                 destination.w = 320;
                 destination.h = 240;
                 SDL_BlitSurface(screenshot, NULL, menuSurface, &destination);
+
+//              Fill menu box
+                SDL_Surface *MenuBackground = SDL_CreateRGBSurface(SDL_HWSURFACE, 140, 185, 16, 0, 0, 0, 0);
+                SDL_Rect rect;
+                rect.x = 80;
+                rect.y = 35;
+                rect.w = 140;
+                rect.h = 185;
+                SDL_FillRect(MenuBackground, 0, 0);
+                SDL_SetAlpha(MenuBackground, SDL_SRCALPHA, 180);
+                SDL_BlitSurface(MenuBackground, NULL, menuSurface, &rect);
+                SDL_FreeSurface(MenuBackground);
             }
             SDL_FreeSurface(screenshot);
-
-//          Fill menu box
-            SDL_Surface *MenuBackground = SDL_CreateRGBSurface(SDL_HWSURFACE, 140, 185, 16, 0, 0, 0, 0);
-            SDL_Rect rect;
-            rect.x = 80;
-            rect.y = 35;
-            rect.w = 140;
-            rect.h = 185;
-            SDL_FillRect(MenuBackground, 0, 0);
-            SDL_SetAlpha(MenuBackground, SDL_SRCALPHA, 100);
-            SDL_BlitSurface(MenuBackground, NULL, menuSurface, &rect);
-            SDL_FreeSurface(MenuBackground);
 
 //          Show title
             ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
