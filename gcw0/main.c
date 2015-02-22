@@ -23,7 +23,6 @@ static int gotomenu;
 #endif
 
 #define SOUND_FREQUENCY 48000
-//#define SOUND_FREQUENCY    44100
 #define SOUND_SAMPLES_SIZE 2048
 
 #define VIDEO_WIDTH  320
@@ -369,7 +368,7 @@ static void sdl_video_update()
     SDL_BlitSurface(sdl_video.surf_bitmap, &sdl_video.srect, sdl_video.surf_screen, &sdl_video.drect);
     //SDL_UpdateRect(sdl_video.surf_screen, 0, 0, 0, 0);
  
- #ifdef GCWZERO
+#ifdef GCWZERO
     if ( (system_hw == SYSTEM_GG) && config.gg_scanlines)
     {
         SDL_Surface *scanlinesSurface;
@@ -406,8 +405,16 @@ struct
  
 static Uint32 sdl_sync_timer_callback(Uint32 interval)
 {
+#ifdef GCWZERO
+    if (!gotomenu) 
+    {
+        SDL_SemPost(sdl_sync.sem_sync);
+        sdl_sync.ticks++;
+    }
+#else
     SDL_SemPost(sdl_sync.sem_sync);
     sdl_sync.ticks++;
+#endif
     if (sdl_sync.ticks == (vdp_pal ? 50 : 20))
     {
         SDL_Event event;
@@ -1143,9 +1150,9 @@ static int gcw0menu(void)
             }
             /* Display On/Off */
             SDL_Rect destination;
-	        destination.x = 220;
-	        destination.w = 100; 
-	        destination.h = 50;
+            destination.x = 220;
+            destination.w = 100; 
+            destination.h = 50;
 //          Save/load autoresume
             destination.y = 70+(15*1);
             textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.sl_autoresume], selected_text_color);
@@ -1168,7 +1175,6 @@ static int gcw0menu(void)
         SDL_BlitSurface(menuSurface, NULL, sdl_video.surf_screen, &dest);
         SDL_FreeSurface(menuSurface);
         SDL_Flip(sdl_video.surf_screen);
- 
         /* Check for user input */
         SDL_EnableKeyRepeat(0,0);
         static int keyheld=0;
@@ -1287,9 +1293,6 @@ static int gcw0menu(void)
                     gotomenu=0;
                     selectedoption=0;
                     SDL_Delay(130);
-//                  sdl_sync.ticks = sdl_video.frames_rendered = 0;
-//                  audio_init(snd.sample_rate, 0);
-//                  event.user.code = 0;
 	            break;
                 }
             }
@@ -1300,9 +1303,6 @@ static int gcw0menu(void)
 	            gotomenu=0;
                     selectedoption=0;
                     SDL_Delay(130);
-//                  audio_init(snd.sample_rate, 0);
-//                  sdl_sync.ticks = sdl_video.frames_rendered = 0;
-//                  event.user.code = 0;
 	            break;
                 }
                 else if (selectedoption == 1)   //Save
@@ -2049,40 +2049,42 @@ int main (int argc, char **argv)
             }
         }
 #ifdef GCWZERO
-    	if (do_once) 
+        if (do_once) 
         {
-	    do_once--; //don't waste write cycles!
-	    if (config.keepaspectratio)
-	    {
-	        FILE* aspect_ratio_file = fopen("/sys/devices/platform/jz-lcd.0/keep_aspect_ratio", "w");
-	       	if (aspect_ratio_file)
-	       	{ 
-	        	fwrite("Y", 1, 1, aspect_ratio_file);
-		        fclose(aspect_ratio_file);
-        	}
+            do_once--; //don't waste write cycles!
+            if (config.keepaspectratio)
+            {
+                FILE* aspect_ratio_file = fopen("/sys/devices/platform/jz-lcd.0/keep_aspect_ratio", "w");
+                if (aspect_ratio_file)
+                { 
+                    fwrite("Y", 1, 1, aspect_ratio_file);
+                    fclose(aspect_ratio_file);
+                }
             }
             if (!config.keepaspectratio)
     	    {
-	        	FILE* aspect_ratio_file = fopen("/sys/devices/platform/jz-lcd.0/keep_aspect_ratio", "w");
-		        if (aspect_ratio_file)
-		        { 
-			        fwrite("N", 1, 1, aspect_ratio_file);
-			        fclose(aspect_ratio_file);
-		        }
-	        }
-	    }
-        if (gotomenu) 
-        {
-	        gcw0menu();
-    	}
+                FILE* aspect_ratio_file = fopen("/sys/devices/platform/jz-lcd.0/keep_aspect_ratio", "w");
+                if (aspect_ratio_file)
+                { 
+                    fwrite("N", 1, 1, aspect_ratio_file);
+                    fclose(aspect_ratio_file);
+                }
+            }
+	}
+
 #endif
 
         sdl_video_update();
         sdl_sound_update(use_sound);
- 
+
         if(!turbo_mode && sdl_sync.sem_sync && sdl_video.frames_rendered % 3 == 0)
         {
             SDL_SemWait(sdl_sync.sem_sync);
+#ifdef GCWZERO
+        } else {
+            if (gotomenu)
+	        gcw0menu();
+#endif
         }
     }
  
