@@ -1324,6 +1324,12 @@ static int gcw0menu(void)
                     selectedoption = 2;
                     SDL_Delay(130);
                 }
+                else if (menustate == MISC_OPTIONS)
+                {
+                    menustate = MAINMENU;
+                    selectedoption = 5;
+                    SDL_Delay(130);
+                }
                 else if (menustate == MAINMENU)
                 {
                     gotomenu=0;
