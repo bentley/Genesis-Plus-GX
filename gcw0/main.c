@@ -20,6 +20,7 @@ static int do_once = 1;
 static int gcw0_w = 320;
 static int gcw0_h = 240;
 static int gotomenu;
+#define JOY_DEADZONE 1000
 #endif
 
 #define SOUND_FREQUENCY 48000
@@ -151,6 +152,20 @@ static void sdl_sound_close()
     if (sdl_sound.buffer)
         free(sdl_sound.buffer);
 }
+
+#ifdef GCWZERO //A-stick support
+static void sdl_joystick_init()
+{
+    if(SDL_Init(SDL_INIT_JOYSTICK) < 0)
+    {
+        MessageBox(NULL, "SDL Joystick initialization failed", "Error", 0);
+        return 0;
+    } 
+    else
+        MessageBox(NULL, "SDL Joystick initialisation successful", "Success", 0);
+    return 1;
+}
+#endif
  
 /* video */
 md_ntsc_t *md_ntsc;
@@ -788,10 +803,11 @@ static int gcw0menu(void)
         "Load state 8",
         "Load state 9",
     };
-    const char *gcw0menu_misc[2]=
+    const char *gcw0menu_misc[3]=
     {
         "Back to main menu",
         "Resume on Save/Load",
+        "A-stick",
     };
 
 //  start menu loop
@@ -1134,7 +1150,7 @@ static int gcw0menu(void)
         else if (menustate == MISC_OPTIONS)
         {
             ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
-            for(i=0; i<2; i++)
+            for(i=0; i<3; i++)
             {
                 SDL_Rect destination;
                 destination.x = 80;
@@ -1156,6 +1172,11 @@ static int gcw0menu(void)
 //          Save/load autoresume
             destination.y = 70+(15*1);
             textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.sl_autoresume], selected_text_color);
+    	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+            SDL_FreeSurface(textSurface);
+//          A-stick
+            destination.y = 70+(15*2);
+            textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.a_stick], selected_text_color);
     	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
             SDL_FreeSurface(textSurface);
 
@@ -1223,7 +1244,7 @@ static int gcw0menu(void)
                 else if (selectedoption > 49 && selectedoption < 60) //misc menu
     	        {
                     selectedoption++;
-                    if (selectedoption == 52)    selectedoption = 50;
+                    if (selectedoption == 53)    selectedoption = 50;
                 } 
                 else  //main menu
                 {
@@ -1255,10 +1276,10 @@ static int gcw0menu(void)
                     selectedoption--;
                     if (selectedoption == 39)    selectedoption = 49;
                 }
-                else if (selectedoption > 49 && selectedoption < 60) //load menu
+                else if (selectedoption > 49 && selectedoption < 60) //misc menu
                 {
                     selectedoption--;
-                    if (selectedoption == 49)    selectedoption = 51;
+                    if (selectedoption == 49)    selectedoption = 52;
                 }
                 else
     	        { //main menu
@@ -1484,6 +1505,13 @@ static int gcw0menu(void)
                     config_save();
                     SDL_Delay(130);
                 }
+                else if (selectedoption == 52)
+                {
+                  //toggle A-Stick
+                    config.a_stick=!config.a_stick;
+                    config_save();
+                    SDL_Delay(130);
+                }
 
             }
             else if(menustate == REMAP_OPTIONS)
@@ -1631,7 +1659,6 @@ int sdl_input_update(void)
  
     /* reset input */
     input.pad[joynum] = 0;
- 
     switch (input.dev[joynum])
     {
     case DEVICE_LIGHTGUN:
@@ -1808,7 +1835,7 @@ int sdl_input_update(void)
         if(keystate[SDLK_j])  input.pad[joynum] |= INPUT_ACTIVATOR_8L;
         if(keystate[SDLK_k])  input.pad[joynum] |= INPUT_ACTIVATOR_8U;
     }
- 
+
     default:
     {
 #ifdef GCWZERO
@@ -1820,8 +1847,6 @@ int sdl_input_update(void)
         if(keystate[config.buttons[Y]])     	input.pad[joynum] |= INPUT_Y;
         if(keystate[config.buttons[Z]])         input.pad[joynum] |= INPUT_Z;
         if(keystate[config.buttons[MODE]])  	input.pad[joynum] |= INPUT_MODE;
- 
-//DK load/save better handled by menu?
         if (keystate[SDLK_ESCAPE])
         {
             gotomenu=1;
@@ -1836,20 +1861,49 @@ int sdl_input_update(void)
         if(keystate[SDLK_c])  input.pad[joynum] |= INPUT_Z;
         if(keystate[SDLK_v])  input.pad[joynum] |= INPUT_MODE;
 #endif
- 
- 
+
+#ifdef GCWZERO //A-stick support
+        static int MoveLeft  = 0;
+        static int MoveRight = 0;
+        static int MoveUp    = 0;
+        static int MoveDown  = 0;
+        if (config.a_stick)
+        {
+            SDL_Joystick* joy;
+            if(SDL_NumJoysticks() > 0)
+                joy = SDL_JoystickOpen(0);
+            Sint16 x_move, y_move;
+            x_move    = SDL_JoystickGetAxis(joy, 0);
+            y_move    = SDL_JoystickGetAxis(joy, 1);
+            MoveLeft  = 0;
+            MoveRight = 0;
+            MoveUp    = 0;
+            MoveDown  = 0;
+            if (x_move < -1000 || x_move > 1000)
+            {
+                if (x_move < -1000) MoveLeft  = 1;
+                if (x_move >  1000) MoveRight = 1;
+            }
+            if (y_move < -1000 || y_move > 1000)
+            {
+                if (y_move < -1000) MoveUp   = 1;
+                if (y_move >  1000) MoveDown = 1;
+            }
+        }
+        if     (keystate[SDLK_UP]    || MoveUp    == 1)  input.pad[joynum] |= INPUT_UP;
+        else if(keystate[SDLK_DOWN]  || MoveDown  == 1)  input.pad[joynum] |= INPUT_DOWN;
+        if     (keystate[SDLK_LEFT]  || MoveLeft  == 1)  input.pad[joynum] |= INPUT_LEFT;
+        else if(keystate[SDLK_RIGHT] || MoveRight == 1)  input.pad[joynum] |= INPUT_RIGHT;
+#else
         if     (keystate[SDLK_UP]   )  input.pad[joynum] |= INPUT_UP;
         else if(keystate[SDLK_DOWN] )  input.pad[joynum] |= INPUT_DOWN;
         if     (keystate[SDLK_LEFT] )  input.pad[joynum] |= INPUT_LEFT;
         else if(keystate[SDLK_RIGHT])  input.pad[joynum] |= INPUT_RIGHT;
- 
-        break;
+#endif 
     }
     }
     return 1;
 }
- 
- 
  
 int main (int argc, char **argv)
 {
@@ -1909,6 +1963,9 @@ int main (int argc, char **argv)
         MessageBox(NULL, caption, "Error", 0);
         exit(1);
     }
+#ifdef GCWZERO
+    sdl_joystick_init();
+#endif
     sdl_video_init();
     if (use_sound) sdl_sound_init();
     sdl_sync_init();
@@ -2027,25 +2084,25 @@ int main (int argc, char **argv)
         {
             switch(event.type)
             {
-            case SDL_USEREVENT:
-            {
-                char caption[100];
-                sprintf(caption,"Genesis Plus GX - %d fps - %s)", event.user.code, (rominfo.international[0] != 0x20) ? rominfo.international : rominfo.domestic);
-                SDL_WM_SetCaption(caption, NULL);
-                break;
-            }
+                case SDL_USEREVENT:
+                {
+                    char caption[100];
+                    sprintf(caption,"Genesis Plus GX - %d fps - %s)", event.user.code, (rominfo.international[0] != 0x20) ? rominfo.international : rominfo.domestic);
+                    SDL_WM_SetCaption(caption, NULL);
+                    break;
+                }
  
-            case SDL_QUIT:
-            {
-                running = 0;
-                break;
-            }
+                case SDL_QUIT:
+                {
+                    running = 0;
+                    break;
+                }
  
-            case SDL_KEYDOWN:
-            {
-                running = sdl_control_update(event.key.keysym.sym);
-                break;
-            }
+                case SDL_KEYDOWN:
+                {
+                    running = sdl_control_update(event.key.keysym.sym);
+                    break;
+                }
             }
         }
 #ifdef GCWZERO
@@ -2081,14 +2138,16 @@ int main (int argc, char **argv)
         {
             SDL_SemWait(sdl_sync.sem_sync);
 #ifdef GCWZERO
-        } else {
+        }
+        else
+        {
             if (gotomenu)
 	        gcw0menu();
 #endif
         }
     }
- 
+
     return 0;
- 
+
 }
- 
+

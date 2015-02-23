@@ -75,6 +75,7 @@ void set_config_defaults(void)
     config.gg_scanlines     = 1; /* 1 = use scanlines on Game Gear */
     config.smsmaskleftbar   = 1; /* 1 = Mask left bar on SMS (better for horizontal scrolling) */
     config.sl_autoresume    = 1; /* 1 = Automatically resume when saving and loading snapshots */
+    config.a_stick          = 1; /* 1 = A-Stick on */
 
     /* controllers options */
     input.system[0]       = SYSTEM_GAMEPAD;
