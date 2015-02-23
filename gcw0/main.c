@@ -1527,7 +1527,7 @@ static int gcw0menu(void)
                     config_save();
                     SDL_Delay(130);
                 }
-                else if (selectedoption == 51)
+                else if (selectedoption == 53)
                 {
                     config.lock_on = (++config.lock_on == 4)? 0 : config.lock_on;
                     config_save();
