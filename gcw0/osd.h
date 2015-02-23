@@ -22,10 +22,10 @@
 #define osd_input_update sdl_input_update
 
 
-#define GG_ROM      "./ggenie.bin"
-#define AR_ROM      "./areplay.bin"
-#define SK_ROM      "./sk.bin"
-#define SK_UPMEM    "./sk2chip.bin"
+#define GG_ROM      "/usr/local/home/.genplus/lock-on/ggenie.bin"
+#define AR_ROM      "/usr/local/home/.genplus/lock-on/areplay.bin"
+#define SK_ROM      "/usr/local/home/.genplus/lock-on/sk.bin"
+#define SK_UPMEM    "/usr/local/home/.genplus/lock-on/sk2chip.bin"
 #define CD_BIOS_US  "/usr/local/home/.genplus/bios/bios_CD_U.bin"
 #define CD_BIOS_EU  "/usr/local/home/.genplus/bios/bios_CD_E.bin"
 #define CD_BIOS_JP  "/usr/local/home/.genplus/bios/bios_CD_J.bin"

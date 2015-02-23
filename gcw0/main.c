@@ -803,12 +803,21 @@ static int gcw0menu(void)
         "Load state 8",
         "Load state 9",
     };
-    const char *gcw0menu_misc[3]=
+    const char *gcw0menu_misc[4]=
     {
         "Back to main menu",
         "Resume on Save/Load",
         "A-stick",
+        "Lock-on",
     };
+
+    const char *lock_on_desc[4]=
+    {
+		"             Off",
+		"      Game Genie",
+		"   Action Replay",
+		"Sonic & Knuckles",
+	};
 
 //  start menu loop
     bitmap.viewport.changed=1; //change screen res if required
@@ -1150,7 +1159,7 @@ static int gcw0menu(void)
         else if (menustate == MISC_OPTIONS)
         {
             ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
-            for(i=0; i<3; i++)
+            for(i=0; i<4; i++)
             {
                 SDL_Rect destination;
                 destination.x = 80;
@@ -1177,6 +1186,12 @@ static int gcw0menu(void)
 //          A-stick
             destination.y = 70+(15*2);
             textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.a_stick], selected_text_color);
+    	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+            SDL_FreeSurface(textSurface);
+            /* Display Lock-on Types */
+            destination.x = 140;
+            destination.y = 70+(15*3);
+            textSurface = TTF_RenderText_Solid(ttffont, lock_on_desc[config.lock_on], selected_text_color);
     	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
             SDL_FreeSurface(textSurface);
 
@@ -1244,7 +1259,7 @@ static int gcw0menu(void)
                 else if (selectedoption > 49 && selectedoption < 60) //misc menu
     	        {
                     selectedoption++;
-                    if (selectedoption == 53)    selectedoption = 50;
+                    if (selectedoption == 54)    selectedoption = 50;
                 } 
                 else  //main menu
                 {
@@ -1279,7 +1294,7 @@ static int gcw0menu(void)
                 else if (selectedoption > 49 && selectedoption < 60) //misc menu
                 {
                     selectedoption--;
-                    if (selectedoption == 49)    selectedoption = 52;
+                    if (selectedoption == 49)    selectedoption = 53;
                 }
                 else
     	        { //main menu
@@ -1509,6 +1524,12 @@ static int gcw0menu(void)
                 {
                   //toggle A-Stick
                     config.a_stick=!config.a_stick;
+                    config_save();
+                    SDL_Delay(130);
+                }
+                else if (selectedoption == 51)
+                {
+                    config.lock_on = (++config.lock_on == 4)? 0 : config.lock_on;
                     config_save();
                     SDL_Delay(130);
                 }
