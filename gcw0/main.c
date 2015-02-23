@@ -1189,7 +1189,7 @@ static int gcw0menu(void)
     	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
             SDL_FreeSurface(textSurface);
             /* Display Lock-on Types */
-            destination.x = 140;
+            destination.x = 142;
             destination.y = 70+(15*3);
             textSurface = TTF_RenderText_Solid(ttffont, lock_on_desc[config.lock_on], selected_text_color);
     	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
