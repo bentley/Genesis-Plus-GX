@@ -156,3 +156,15 @@ char* gcw0_get_key_name(int keycode)
 	else return "...";
 }
 
+char *get_file_name(char *full_path) {
+	char file_name[256];
+	sprintf(file_name, "%s", basename(full_path));
+	
+	/* remove file extension */
+	int i = strlen(file_name) - 1;
+	while ((i > 0) && (file_name[i] != '.')) i--;
+	if (i > 0) file_name[i] = 0;
+	
+	return file_name;
+}
+
