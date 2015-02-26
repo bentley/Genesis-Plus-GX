@@ -37,7 +37,7 @@ int turbo_mode  = 0;
 int use_sound   = 1;
 int fullscreen  = 1; /* SDL_FULLSCREEN */
 
-uint32 crc = 0;
+char rom_filename[256];
 
 /* sound */
 
@@ -668,7 +668,6 @@ static int sdl_control_update(SDLKey keystate)
 static void shutdown()
 {
     FILE *fp;
-    crc = crc32(0, cart.rom, cart.romsize);
  
     //TODO: verify SCD backup room dir and files
     if (system_hw == SYSTEM_MCD)
@@ -703,13 +702,15 @@ static void shutdown()
     {
         /* save SRAM */
         char save_file[256];
-        sprintf(save_file,"%s/%X.srm", get_save_directory(), crc);
-        fp = fopen(save_file, "wb");
-        if (fp!=NULL)
-        {
-            fwrite(sram.sram,0x10000,1, fp);
-            fclose(fp);
-        }
+        if (rom_filename[0] != '\0') {
+			sprintf(save_file,"%s/%s.srm", get_save_directory(), rom_filename);
+			fp = fopen(save_file, "wb");
+			if (fp!=NULL)
+			{
+				fwrite(sram.sram,0x10000,1, fp);
+				fclose(fp);
+			}
+		}
     }
     audio_shutdown();
     error_shutdown();
@@ -1043,7 +1044,7 @@ static int gcw0menu(void)
           //Show saved BMP as background if available
             SDL_Surface* screenshot;
             char load_state_screenshot[256];
-            sprintf(load_state_screenshot,"%s/%X.%d.bmp", get_save_directory(), crc, selectedoption-30);
+            sprintf(load_state_screenshot,"%s/%s.%d.bmp", get_save_directory(), rom_filename, selectedoption-30);
             screenshot = SDL_LoadBMP(load_state_screenshot);
             if (screenshot)
             {
@@ -1102,7 +1103,7 @@ static int gcw0menu(void)
           //Show saved BMP as background if available
             SDL_Surface* screenshot;
             char load_state_screenshot[256];
-            sprintf(load_state_screenshot,"%s/%X.%d.bmp", get_save_directory(), crc, selectedoption-40);
+            sprintf(load_state_screenshot,"%s/%s.%d.bmp", get_save_directory(), rom_filename, selectedoption-40);
             screenshot = SDL_LoadBMP(load_state_screenshot);
             if (screenshot)
             {
@@ -1433,7 +1434,7 @@ static int gcw0menu(void)
                 {
                   //save to selected savestate
                     char save_state_file[256];
-                    sprintf(save_state_file,"%s/%X.gp%d", get_save_directory(), crc, selectedoption-30);
+                    sprintf(save_state_file,"%s/%s.gp%d", get_save_directory(), rom_filename, selectedoption-30);
                     FILE *f = fopen(save_state_file,"wb");
                     if (f)
                     {
@@ -1445,7 +1446,7 @@ static int gcw0menu(void)
 
                   //Save BMP screenshot
                     char save_state_screenshot[256];
-                    sprintf(save_state_screenshot,"%s/%X.%d.bmp", get_save_directory(), crc, selectedoption-30);
+                    sprintf(save_state_screenshot,"%s/%s.%d.bmp", get_save_directory(), rom_filename, selectedoption-30);
                     SDL_Surface* screenshot;
                     if (!config.gcw0_fullscreen)
                     {
@@ -1494,7 +1495,7 @@ static int gcw0menu(void)
                 {
                   //load selected loadstate
                     char save_state_file[256];
-                    sprintf(save_state_file,"%s/%X.gp%d", get_save_directory(), crc, selectedoption-40 );
+                    sprintf(save_state_file,"%s/%s.gp%d", get_save_directory(), rom_filename, selectedoption-40 );
                     FILE *f = fopen(save_state_file,"rb");
                     if (f)
                     {
@@ -1951,6 +1952,9 @@ int main (int argc, char **argv)
     create_default_directories();
     /* set default config */
     set_config_defaults();
+    
+    /* using rom file name instead of crc code to save files */
+    sprintf(rom_filename, "%s",  get_file_name(argv[1]));
  
     /* mark all BIOS as unloaded */
     system_bios = 0;
@@ -2024,8 +2028,7 @@ int main (int argc, char **argv)
         exit(1);
     }
  
-    crc = crc32(0, cart.rom, cart.romsize);
- 
+
     /* initialize system hardware */
     audio_init(SOUND_FREQUENCY, 0);
     system_init();
@@ -2085,7 +2088,7 @@ int main (int argc, char **argv)
     {
         /* load SRAM */
         char save_file[256];
-        sprintf(save_file,"%s/%X.srm", get_save_directory(), crc);
+        sprintf(save_file,"%s/%s.srm", get_save_directory(), rom_filename);
         fp = fopen(save_file, "rb");
         if (fp!=NULL)
         {
