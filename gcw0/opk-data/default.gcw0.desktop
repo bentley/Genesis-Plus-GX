@@ -8,3 +8,4 @@ Type=Application
 StartupNotify=true
 Icon=md
 Categories=emulators;
+X-OD-Manual=gcw0readme.txt
