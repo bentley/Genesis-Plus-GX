@@ -474,7 +474,6 @@ int cdd_load(char *filename, char *header)
         {
           /* read file header */
           unsigned char head[32];
-//          unsigned char head[128];
           fseek(cdd.toc.tracks[cdd.toc.last].fd, 8, SEEK_SET);
           fread(head, 32, 1, cdd.toc.tracks[cdd.toc.last].fd);
           fseek(cdd.toc.tracks[cdd.toc.last].fd, 0, SEEK_SET);
@@ -1116,7 +1115,7 @@ void cdd_read_audio(unsigned int samples)
 void cdd_update(void)
 {  
 #ifdef LOG_CDD
-  error("LBA = %d (track n°%d)(latency=%d)\n", cdd.lba, cdd.index, cdd.latency);
+  error("LBA = %d (track nï¿½%d)(latency=%d)\n", cdd.lba, cdd.index, cdd.latency);
 #endif
   
   /* seeking disc */
