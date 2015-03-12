@@ -96,8 +96,8 @@ void set_config_defaults(void)
 	config.buttons[X] 		= SDLK_TAB;//l
 	config.buttons[Y] 		= SDLK_SPACE;//y
 	config.buttons[Z] 		= SDLK_BACKSPACE;//r
-	config.buttons[START] 	= SDLK_RETURN;//start
-	config.buttons[MODE] 	= 0;
+	config.buttons[START]           = SDLK_RETURN;//start
+	config.buttons[MODE] 	        = SDLK_ESCAPE;//select
     
     /* try to restore user config */
 	int loaded = config_load();

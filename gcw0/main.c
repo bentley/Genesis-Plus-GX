@@ -1676,7 +1676,7 @@ static int gcw0menu(void)
                     else if (selectedoption == 27)
                     {
                       //button mode remap
-                        config.buttons[MODE] = (pressed_key==SDLK_ESCAPE)? 0: pressed_key;
+                        config.buttons[MODE] = pressed_key;
                         config_save();
                         SDL_Delay(130);
                         selectedoption++;
@@ -1927,7 +1927,7 @@ int sdl_input_update(void)
         if(keystate[config.buttons[Y]])     	input.pad[joynum] |= INPUT_Y;
         if(keystate[config.buttons[Z]])         input.pad[joynum] |= INPUT_Z;
         if(keystate[config.buttons[MODE]])  	input.pad[joynum] |= INPUT_MODE;
-        if (keystate[SDLK_ESCAPE])
+        if (keystate[SDLK_ESCAPE] && keystate[SDLK_RETURN])
         {
             gotomenu=1;
         }
@@ -1947,14 +1947,17 @@ int sdl_input_update(void)
         static int MoveRight = 0;
         static int MoveUp    = 0;
         static int MoveDown  = 0;
+        Sint16 x_move = 0;
+        Sint16 y_move = 0;
         if (config.a_stick)
         {
             SDL_Joystick* joy;
             if(SDL_NumJoysticks() > 0)
-                joy = SDL_JoystickOpen(0);
-            Sint16 x_move, y_move;
-            x_move    = SDL_JoystickGetAxis(joy, 0);
-            y_move    = SDL_JoystickGetAxis(joy, 1);
+            {
+                joy    = SDL_JoystickOpen(0);
+                x_move = SDL_JoystickGetAxis(joy, 0);
+                y_move = SDL_JoystickGetAxis(joy, 1);
+            }
             MoveLeft  = 0;
             MoveRight = 0;
             MoveUp    = 0;
