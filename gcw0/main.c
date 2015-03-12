@@ -1066,7 +1066,7 @@ static int gcw0menu(void)
             {
                 if (i < 8)
                 {
-                    sprintf(remap_text, "%s%25s", gcw0menu_remapoptionslist[i], gcw0_get_key_name(config.buttons[i]));
+                    sprintf(remap_text, "%-5s                   %-7s", gcw0menu_remapoptionslist[i], gcw0_get_key_name(config.buttons[i]));
                 } else
                 {
                     sprintf(remap_text, gcw0menu_remapoptionslist[i]); // for return option
