@@ -750,8 +750,11 @@ int cdd_load(char *filename, char *header)
 
         /* auto-detect PAUSE within audio files */
         ov_pcm_seek(&cdd.toc.tracks[cdd.toc.last].vf, 100 * 588);
-//gcw0        ov_read(&cdd.toc.tracks[cdd.toc.last].vf, (char *)head, 32, 0);
+#ifdef GCWZERO
         ov_read(&cdd.toc.tracks[cdd.toc.last].vf, (char *)head, 32, 0, 2, 1, 0);
+#else
+        ov_read(&cdd.toc.tracks[cdd.toc.last].vf, (char *)head, 32, 0);
+#endif
         ov_pcm_seek(&cdd.toc.tracks[cdd.toc.last].vf, 0);
         if (*(int32 *)head == 0)
         {
@@ -977,9 +980,11 @@ void cdd_read_audio(unsigned int samples)
       samples = samples * 4;
       while (done < samples)
       {
-//gcw0        len = ov_read(&cdd.toc.tracks[cdd.index].vf, (char *)(cdc.ram + done), samples - done, 0);
+#ifdef GCWZERO
         len = ov_read(&cdd.toc.tracks[cdd.index].vf, (char *)(cdc.ram + done), samples - done, 0, 2, 1, 0);
-
+#else
+        len = ov_read(&cdd.toc.tracks[cdd.index].vf, (char *)(cdc.ram + done), samples - done, 0);
+#endif
         if (len <= 0) 
         {
           done = samples;

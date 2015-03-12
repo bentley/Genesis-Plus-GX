@@ -23,9 +23,11 @@ static int gotomenu;
 #define JOY_DEADZONE 1000
 #endif
 
-//gcw0test#define SOUND_FREQUENCY 48000
-//#define SOUND_SAMPLES_SIZE 2048
+#ifdef GCWZERO
 #define SOUND_FREQUENCY 44100
+#else
+#define SOUND_FREQUENCY 48000
+#endif
 #define SOUND_SAMPLES_SIZE 2048
 
 #define VIDEO_WIDTH  320
