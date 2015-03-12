@@ -821,7 +821,7 @@ static int gcw0menu(void)
     const char *gcw0menu_savestate[10]=
     {
         "Back to main menu",
-        "Save state 1",
+        "Save state 1 (Quicksave)",
         "Save state 2",
         "Save state 3",
         "Save state 4",
@@ -834,7 +834,7 @@ static int gcw0menu(void)
     const char *gcw0menu_loadstate[10]=
     {
         "Back to main menu",
-        "Load state 1",
+        "Load state 1 (Quickload)",
         "Load state 2",
         "Load state 3",
         "Load state 4",
@@ -1930,6 +1930,68 @@ int sdl_input_update(void)
         if (keystate[SDLK_ESCAPE] && keystate[SDLK_RETURN])
         {
             gotomenu=1;
+        }
+        if (keystate[SDLK_ESCAPE] && keystate[SDLK_TAB])
+        {
+          //save to quicksave slot
+            char save_state_file[256];
+            sprintf(save_state_file,"%s/%s.gp1", get_save_directory(), rom_filename);
+                FILE *f = fopen(save_state_file,"wb");
+                if (f)
+                {
+                    uint8 buf[STATE_SIZE];
+                    int len = state_save(buf);
+                    fwrite(&buf, len, 1, f);
+                    fclose(f);
+                }
+          //Save BMP screenshot
+            char save_state_screenshot[256];
+            sprintf(save_state_screenshot,"%s/%s.1.bmp", get_save_directory(), rom_filename);
+            SDL_Surface* screenshot;
+            if (!config.gcw0_fullscreen)
+            {
+                screenshot = SDL_CreateRGBSurface(SDL_HWSURFACE, sdl_video.srect.w, sdl_video.srect.h, 16, 0, 0, 0, 0);
+                SDL_Rect temp;
+                temp.x = 0;
+                temp.y = 0;
+                temp.w = sdl_video.srect.w;
+                temp.h = sdl_video.srect.h;
+
+                SDL_BlitSurface(sdl_video.surf_bitmap, &temp, screenshot, &temp);
+                SDL_SaveBMP(screenshot, save_state_screenshot);
+                SDL_FreeSurface(screenshot);
+            }
+            else
+            {
+                screenshot = SDL_CreateRGBSurface(SDL_HWSURFACE, gcw0_w, gcw0_h, 16, 0, 0, 0, 0);
+                SDL_Rect temp;
+                temp.x = 0;
+                temp.y = 0;
+                temp.w = gcw0_w;
+                temp.h = gcw0_h;
+
+                SDL_BlitSurface(sdl_video.surf_bitmap, &temp, screenshot, &temp);
+                SDL_SaveBMP(screenshot, save_state_screenshot);
+                SDL_FreeSurface(screenshot);
+            }
+
+            SDL_Delay(250);
+        }
+        if (keystate[SDLK_ESCAPE] && keystate[SDLK_BACKSPACE])
+        {
+          //load quicksave slot
+            char save_state_file[256];
+            sprintf(save_state_file,"%s/%s.gp1", get_save_directory(), rom_filename );
+            FILE *f = fopen(save_state_file,"rb");
+            if (f)
+            {
+                uint8 buf[STATE_SIZE];
+                fread(&buf, STATE_SIZE, 1, f);
+                state_load(buf);
+                fclose(f);
+            }
+            SDL_Delay(250);
+
         }
 #else
         if(keystate[SDLK_a])  input.pad[joynum] |= INPUT_A;
