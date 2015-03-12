@@ -1,4 +1,3 @@
-
 # Makefile for genplus SDL GCW0
 #
 # (c) 1999, 2000, 2001, 2002, 2003  Charles MacDonald
@@ -31,8 +30,15 @@ CFLAGS    = `$(SDL-CONFIG) --cflags` -O3 -fomit-frame-pointer -Wall  -ansi -std=
 DEFINES   = -DLSB_FIRST -DUSE_16BPP_RENDERING -DUSE_LIBTREMOR -DGCWZERO -DALIGN_LONG -DALT_RENDERER
 
 SRCDIR    = ../core
-INCLUDES  = -I$(SRCDIR) -I$(SRCDIR)/z80 -I$(SRCDIR)/m68k -I$(SRCDIR)/sound -I$(SRCDIR)/input_hw -I$(SRCDIR)/cart_hw -I$(SRCDIR)/cart_hw/svp -I$(SRCDIR)/cd_hw -I$(SRCDIR)/ntsc -I$(SRCDIR)/tremor -I$(SRCDIR)/../gcw0
-LIBS	  = `$(SDL-CONFIG) --libs --libs` -lz -lm -lSDL_ttf -lSDL_image
+INCLUDES  =     -I$(SRCDIR) -I$(SRCDIR)/z80 -I$(SRCDIR)/m68k \
+		-I$(SRCDIR)/sound -I$(SRCDIR)/input_hw -I$(SRCDIR)/cart_hw -I$(SRCDIR)/cart_hw/svp \
+		-I$(SRCDIR)/cd_hw -I$(SRCDIR)/ntsc \
+		-I$(SRCDIR)/../gcw0 \
+-I/opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/include/
+#		-I$(SRCDIR)/tremor 
+
+LIBS	  = `$(SDL-CONFIG) --libs --libs` -lz -lm -lSDL_ttf -lSDL_image \
+-L/opt/gcw0-toolchain/usr/mipsel-gcw0-linux-uclibc/sysroot/usr/lib -lvorbisfile
 
 OBJDIR = ./build_gcw0
 
@@ -102,21 +108,21 @@ OBJECTS	+=	$(OBJDIR)/main.o	\
 		$(OBJDIR)/utils.o       #\
 #		$(OBJDIR)/menu.o	
 
-OBJECTS	+=	$(OBJDIR)/bitwise.o    \
-		$(OBJDIR)/block.o      \
-		$(OBJDIR)/codebook.o   \
-		$(OBJDIR)/floor0.o     \
-		$(OBJDIR)/floor1.o     \
-		$(OBJDIR)/framing.o    \
-		$(OBJDIR)/info.o       \
-		$(OBJDIR)/mapping0.o   \
-		$(OBJDIR)/mdct.o       \
-		$(OBJDIR)/registry.o   \
-		$(OBJDIR)/res012.o     \
-		$(OBJDIR)/sharedbook.o \
-		$(OBJDIR)/synthesis.o  \
-		$(OBJDIR)/vorbisfile.o \
-		$(OBJDIR)/window.o
+#OBJECTS	+=	$(OBJDIR)/block.o      \
+#		$(OBJDIR)/codebook.o   \
+#		$(OBJDIR)/floor0.o     \
+#		$(OBJDIR)/floor1.o     \
+#		$(OBJDIR)/framing.o    \
+#		$(OBJDIR)/info.o       \
+#		$(OBJDIR)/mapping0.o   \
+#		$(OBJDIR)/mdct.o       \
+#		$(OBJDIR)/registry.o   \
+#		$(OBJDIR)/res012.o     \
+#		$(OBJDIR)/sharedbook.o \
+#		$(OBJDIR)/synthesis.o  \
+#		$(OBJDIR)/vorbisfile.o \
+#		$(OBJDIR)/window.o
+## 1st		$(OBJDIR)/bitwise.o    \
 
 
 all: $(NAME)
@@ -157,11 +163,11 @@ $(OBJDIR)/%.o :	$(SRCDIR)/m68k/%.c
 $(OBJDIR)/%.o :	$(SRCDIR)/ntsc/%.c $(SRCDIR)/ntsc/%.h	        
 		$(CC) -c $(CFLAGS) $(INCLUDES) $(DEFINES) $< -o $@
 
-$(OBJDIR)/%.o :	$(SRCDIR)/tremor/%.c $(SRCDIR)/tremor/%.h	        
-		$(CC) -c $(CFLAGS) $(INCLUDES) $(DEFINES) $< -o $@
+#$(OBJDIR)/%.o :	$(SRCDIR)/tremor/%.c $(SRCDIR)/tremor/%.h	        
+#		$(CC) -c $(CFLAGS) $(INCLUDES) $(DEFINES) $< -o $@
      
-$(OBJDIR)/%.o :	$(SRCDIR)/tremor/%.c 	        
-		$(CC) -c $(CFLAGS) $(INCLUDES) $(DEFINES) $< -o $@
+#$(OBJDIR)/%.o :	$(SRCDIR)/tremor/%.c 	        
+#		$(CC) -c $(CFLAGS) $(INCLUDES) $(DEFINES) $< -o $@
 
 $(OBJDIR)/%.o :	$(SRCDIR)/../gcw0/%.c $(SRCDIR)/../gcw0/%.h	        
 		$(CC) -c $(CFLAGS) $(INCLUDES) $(DEFINES) $< -o $@

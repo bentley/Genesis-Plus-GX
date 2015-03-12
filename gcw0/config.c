@@ -76,6 +76,7 @@ void set_config_defaults(void)
     config.smsmaskleftbar   = 1; /* 1 = Mask left bar on SMS (better for horizontal scrolling) */
     config.sl_autoresume    = 1; /* 1 = Automatically resume when saving and loading snapshots */
     config.a_stick          = 1; /* 1 = A-Stick on */
+    config.gcw0_frameskip   = 0; /* 0 = off, 1 = skip alternate frames, 2 = skip 2 in 3 frames, etc. Useful for FMV in MCD. */
 
     /* controllers options */
     input.system[0]       = SYSTEM_GAMEPAD;

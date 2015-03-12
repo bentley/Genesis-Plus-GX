@@ -38,6 +38,11 @@
 #include "shared.h"
 
 #ifdef USE_LIBTREMOR
+#ifdef GCWZERO
+#include <vorbis/vorbisfile.h>
+#else
+#include "tremor/ivorbisfile.h"
+#endif
 #define SUPPORTED_EXT 20
 #else
 #define SUPPORTED_EXT 10
@@ -469,6 +474,7 @@ int cdd_load(char *filename, char *header)
         {
           /* read file header */
           unsigned char head[32];
+//          unsigned char head[128];
           fseek(cdd.toc.tracks[cdd.toc.last].fd, 8, SEEK_SET);
           fread(head, 32, 1, cdd.toc.tracks[cdd.toc.last].fd);
           fseek(cdd.toc.tracks[cdd.toc.last].fd, 0, SEEK_SET);
@@ -744,7 +750,8 @@ int cdd_load(char *filename, char *header)
 
         /* auto-detect PAUSE within audio files */
         ov_pcm_seek(&cdd.toc.tracks[cdd.toc.last].vf, 100 * 588);
-        ov_read(&cdd.toc.tracks[cdd.toc.last].vf, (char *)head, 32, 0);
+//gcw0        ov_read(&cdd.toc.tracks[cdd.toc.last].vf, (char *)head, 32, 0);
+        ov_read(&cdd.toc.tracks[cdd.toc.last].vf, (char *)head, 32, 0, 2, 1, 0);
         ov_pcm_seek(&cdd.toc.tracks[cdd.toc.last].vf, 0);
         if (*(int32 *)head == 0)
         {
@@ -970,7 +977,9 @@ void cdd_read_audio(unsigned int samples)
       samples = samples * 4;
       while (done < samples)
       {
-        len = ov_read(&cdd.toc.tracks[cdd.index].vf, (char *)(cdc.ram + done), samples - done, 0);
+//gcw0        len = ov_read(&cdd.toc.tracks[cdd.index].vf, (char *)(cdc.ram + done), samples - done, 0);
+        len = ov_read(&cdd.toc.tracks[cdd.index].vf, (char *)(cdc.ram + done), samples - done, 0, 2, 1, 0);
+
         if (len <= 0) 
         {
           done = samples;

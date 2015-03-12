@@ -23,7 +23,9 @@ static int gotomenu;
 #define JOY_DEADZONE 1000
 #endif
 
-#define SOUND_FREQUENCY 48000
+//gcw0test#define SOUND_FREQUENCY 48000
+//#define SOUND_SAMPLES_SIZE 2048
+#define SOUND_FREQUENCY 44100
 #define SOUND_SAMPLES_SIZE 2048
 
 #define VIDEO_WIDTH  320
@@ -206,17 +208,51 @@ static int sdl_video_init()
  
 static void sdl_video_update()
 {
+static int test;
     if (system_hw == SYSTEM_MCD)
     {
+#ifdef GCWZERO
+        if (test >= config.gcw0_frameskip)  // >= in case frameskip has just been lowered
+        {
+            system_frame_scd(0); //render frame
+            test = 0;
+        } else {
+            system_frame_scd(1); //skip frame render
+            test ++;
+        }
+#else
         system_frame_scd(0);
+#endif
     }
     else if ((system_hw & SYSTEM_PBC) == SYSTEM_MD)
+#ifdef GCWZERO
     {
+        if (test >= config.gcw0_frameskip) 
+        {
+            system_frame_gen(0);
+            test = 0;
+        } else {
+            system_frame_gen(1);
+            test ++;
+        }
+#else
         system_frame_gen(0);
+#endif
     }
     else
     {
+#ifdef GCWZERO
+        if (test >= config.gcw0_frameskip) 
+        {
+            system_frame_sms(0);
+            test = 0;
+        } else {
+            system_frame_sms(1);
+            test ++;
+        }
+#else
         system_frame_sms(0);
+#endif
     }
  
     /* viewport size changed */
@@ -382,7 +418,6 @@ static void sdl_video_update()
 #endif
     SDL_BlitSurface(sdl_video.surf_bitmap, &sdl_video.srect, sdl_video.surf_screen, &sdl_video.drect);
     //SDL_UpdateRect(sdl_video.surf_screen, 0, 0, 0, 0);
- 
 #ifdef GCWZERO
     if ( (system_hw == SYSTEM_GG) && config.gg_scanlines)
     {
@@ -393,12 +428,7 @@ static void sdl_video_update()
     }
 #endif
 
-//DK frameskip testing, uncomment below to set to 30fps flipped (virtual racing tests)
-//static int eo;
-//if(eo){
     SDL_Flip(sdl_video.surf_screen);
-//eo--;}
-//else eo++;
     ++sdl_video.frames_rendered;
 }
  
@@ -753,13 +783,21 @@ static int gcw0menu(void)
         "Reset",
         "Quit"
     };
-    const char *gcw0menu_gfxlist[5]=
+    const char *gcw0menu_gfxlist[6]=
     {
         "Scaling",
         "Keep aspect ratio",
         "Scanlines (GG)",
         "Mask left bar (SMS)",
+        "Frameskip",
         "Return to main menu",
+    };
+    const char *gcw0menu_numericlist[4]=
+    {
+        "0",
+        "1",
+        "2",
+        "3",
     };
     const char *gcw0menu_onofflist[2]=
     {
@@ -964,7 +1002,7 @@ static int gcw0menu(void)
         else if (menustate == GRAPHICS_OPTIONS)
         {
 			ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
-            for(i=0; i<5; i++)
+            for(i=0; i<6; i++)
             {
                 SDL_Rect destination;
                 destination.x = 80;
@@ -1001,6 +1039,11 @@ static int gcw0menu(void)
 //          Mask left bar
             destination.y = 70+(15*3);
     	    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.smsmaskleftbar], selected_text_color);
+	        SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+	        SDL_FreeSurface(textSurface);
+//          Frameskip
+            destination.y = 70+(15*4);
+    	    textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_numericlist[config.gcw0_frameskip], selected_text_color);
 	        SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
 	        SDL_FreeSurface(textSurface);
 
@@ -1240,7 +1283,7 @@ static int gcw0menu(void)
                 if        (selectedoption >  9 && selectedoption < 20) //graphics menu
                 {
                     selectedoption++;
-                    if (selectedoption == 15) selectedoption = 10;
+                    if (selectedoption == 16) selectedoption = 10;
                 } 
                 else if (selectedoption > 19 && selectedoption < 30) //remap menu
                 {
@@ -1275,7 +1318,7 @@ static int gcw0menu(void)
                 if        (selectedoption > 9  && selectedoption < 20) //graphics menu
                 {
                     selectedoption--;
-                    if (selectedoption == 9)     selectedoption = 14;
+                    if (selectedoption == 9)     selectedoption = 15;
     	        }
                 else if (selectedoption > 19 && selectedoption < 30) //remap menu
     	        {
@@ -1418,6 +1461,13 @@ static int gcw0menu(void)
                     config_save();
                 }
                 else if (selectedoption == 14) 
+                { //Frameskip
+                    SDL_Delay(130);
+                    config.gcw0_frameskip ++;
+                    if (config.gcw0_frameskip == 4) config.gcw0_frameskip = 0;
+                    config_save();
+                }
+                else if (selectedoption == 15) 
                 { //Back to main menu
                     menustate = MAINMENU;
                     selectedoption = 3;
@@ -2030,6 +2080,7 @@ int main (int argc, char **argv)
  
 
     /* initialize system hardware */
+//NOTE gcw0 second value determines framerate
     audio_init(SOUND_FREQUENCY, 0);
     system_init();
  
@@ -2160,12 +2211,12 @@ int main (int argc, char **argv)
 	}
 
 #endif
-
         sdl_video_update();
         sdl_sound_update(use_sound);
 
         if(!turbo_mode && sdl_sync.sem_sync && sdl_video.frames_rendered % 3 == 0)
         {
+if (!config.gcw0_frameskip || (config.gcw0_frameskip && (system_hw != SYSTEM_MCD))) //we really only need this for fmv sequences
             SDL_SemWait(sdl_sync.sem_sync);
 #ifdef GCWZERO
         }
