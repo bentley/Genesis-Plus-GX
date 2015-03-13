@@ -27,7 +27,7 @@ see http://www.libretro.com/forums/index.php
 Current builds are available for download from https://github.com/ekeeke/Genesis-Plus-GX/tree/master/builds
 
 
-[Features](https://bitbucket.org/eke/genesis-plus-gx/wiki/Frequently%20Asked%20Questions)
+[Features](https://bitbucket.org/eke/genesis-plus-gx/wiki/Features)
 -------------
 
 [Credits](https://bitbucket.org/eke/genesis-plus-gx/wiki/Credits)
