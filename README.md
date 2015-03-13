@@ -26,9 +26,10 @@ http://boards.dingoonity.org/gcw-development/genesis-plus-gx-experimental-build/
 For SG-1000, Game Gear (GG), Master System (SMS) and Mega Drive (Genesis, MD) you don't need to do anything. Just locate the rom file you wish to use (zip files are supported) and run it through the gMenu.
 
 For Sega CD games you will need the correct bios files. These are not included with this distribution for copyright reasons. Once you have located the correct bios you will need to rename them according to the correct region:
-* "_/usr/local/home/.genplus/bios/bios_CD_U.bin_"
-* "_/usr/local/home/.genplus/bios/bios_CD_E.bin_"
-* "_/usr/local/home/.genplus/bios/bios_CD_J.bin_"
+
+*  "_/usr/local/home/.genplus/bios/bios_CD_U.bin_"
+*  "_/usr/local/home/.genplus/bios/bios_CD_E.bin_"
+*  "_/usr/local/home/.genplus/bios/bios_CD_J.bin_"
 
 If everything is setup correctly you will then need to locate your image files and run them. _.bin/.cue_ and _.iso_ files are supported, _.ogg_ compressed tracks are supported, _.mp3_ is NOT supported for legal reasons. (ogg is better anyway :P)
 
