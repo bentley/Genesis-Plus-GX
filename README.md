@@ -14,7 +14,7 @@ The result is that Genesis Plus GX is now more a continuation of the original pr
 
 ----
 
-Multi-platform sourcecode (core) is available for use under a specific non-commercial [license](https://bitbucket.org/eke/genesis-plus-gx/src/LICENSE.txt) and maintained here as well as [github](https://github.com/ekeeke/Genesis-Plus-GX) so that other Genesis Plus ports can take advantage of it, as I really hope this emulator can become a reference for _open-source_ and _accurate_ Genesis emulation. If you ported this emulator to other platforms or need help porting it, feel free to contact me.
+Multi-platform sourcecode (core) is available for use under a specific non-commercial [license](https://bitbucket.org/eke/genesis-plus-gx/src/aa9d0889309bc8b13f140be8949415a32d0461a7/LICENSE.txt) and maintained here as well as [github](https://github.com/ekeeke/Genesis-Plus-GX) so that other Genesis Plus ports can take advantage of it, as I really hope this emulator can become a reference for _open-source_ and _accurate_ Genesis emulation. If you ported this emulator to other platforms or need help porting it, feel free to contact me.
 
 ----
 
