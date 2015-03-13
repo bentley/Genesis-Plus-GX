@@ -75,6 +75,7 @@ Some users have issues with their analog controls causing erratic movements. Tur
 ###Lock-on (Off)
 If enabled, when loading a rom the selected file will be loaded first.
 Rename each binary file as follows:
+
 * Game Genie: "_/usr/local/home/.genplus/lock-on/ggenie.bin_"
 * Action Replay:  "_/usr/local/home/.genplus/lock-on/areplay.bin_"
 * Sonic & Knuckles:  "_/usr/local/home/.genplus/lock-on/sk.bin_" and "_/usr/local/home/.genplus/lock-on/sk2chip.bin_" [additional info](https://code.google.com/p/genplus-gx/issues/detail?id=336)
