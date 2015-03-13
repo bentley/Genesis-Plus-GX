@@ -28,7 +28,10 @@ Current builds are available for download from https://github.com/ekeeke/Genesis
 
 
 [Features](https://bitbucket.org/eke/genesis-plus-gx/wiki/Frequently%20Asked%20Questions)
+-------------
 
-[Credits] (https://bitbucket.org/eke/genesis-plus-gx/wiki/Credits)
+[Credits](https://bitbucket.org/eke/genesis-plus-gx/wiki/Credits)
+-----------
 
-[FAQ] (https://bitbucket.org/eke/genesis-plus-gx/wiki/Frequently%20Asked%20Questions)
+[FAQ](https://bitbucket.org/eke/genesis-plus-gx/wiki/Frequently%20Asked%20Questions)
+-------
