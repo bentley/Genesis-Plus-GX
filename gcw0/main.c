@@ -20,6 +20,15 @@ static int do_once = 1;
 static int gcw0_w = 320;
 static int gcw0_h = 240;
 static int gotomenu;
+static int show_lightgun;
+const char *cursor[4]=
+{
+    "./CLASSIC_01_RED.png", //doesn't flash (for epileptics it's default)
+    "./CLASSIC_02.png", //square flashing red and white
+    "./CLASSIC_01.png",
+    "./SQUARE_02.png",
+};
+
 #define JOY_DEADZONE 1000
 #endif
 
@@ -189,7 +198,7 @@ static int sdl_video_init()
     if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
     {
         MessageBox(NULL, "SDL Video initialization failed", "Error", 0);
-        return 0;
+        return;
     }
 #ifdef GCWZERO
     sdl_video.surf_screen  = SDL_SetVideoMode(VIDEO_WIDTH, VIDEO_HEIGHT, 16, SDL_HWSURFACE |
@@ -205,7 +214,7 @@ static int sdl_video_init()
     sdl_video.surf_bitmap = SDL_CreateRGBSurface(SDL_HWSURFACE, 720, 576, 16, 0, 0, 0, 0);
     sdl_video.frames_rendered = 0;
     SDL_ShowCursor(0);
-    return 1;
+    return;
 }
  
 static void sdl_video_update()
@@ -417,10 +426,15 @@ static int test;
             } 
         }
     }
+    if (show_lightgun && !config.gcw0_fullscreen) // hack to remove cursor corruption of over game screen edge
+    {
+        SDL_FillRect(sdl_video.surf_screen, 0, 0);
+    }
 #endif
     SDL_BlitSurface(sdl_video.surf_bitmap, &sdl_video.srect, sdl_video.surf_screen, &sdl_video.drect);
     //SDL_UpdateRect(sdl_video.surf_screen, 0, 0, 0, 0);
 #ifdef GCWZERO
+//  Add scanlines to Game Gear games if requested
     if ( (system_hw == SYSTEM_GG) && config.gg_scanlines)
     {
         SDL_Surface *scanlinesSurface;
@@ -428,6 +442,56 @@ static int test;
         SDL_BlitSurface(scanlinesSurface, NULL, sdl_video.surf_screen, &sdl_video.drect);
 	SDL_FreeSurface(scanlinesSurface);
     }
+    if (show_lightgun)
+    {
+//      Remove previous cursor from black bars
+        if (config.gcw0_fullscreen)
+        {
+            if (config.smsmaskleftbar)
+            {
+                SDL_Rect srect;
+                srect.x = 0;
+                srect.y = 0;
+                srect.w = 4;
+                srect.h = 192;
+                SDL_FillRect(sdl_video.surf_screen, &srect, SDL_MapRGB(sdl_video.surf_screen->format, 0, 0, 0));
+                srect.x = 252;
+                SDL_FillRect(sdl_video.surf_screen, &srect, SDL_MapRGB(sdl_video.surf_screen->format, 0, 0, 0));
+            }
+        }
+        /* get mouse coordinates (absolute values) */
+        int x,y;
+        int state = SDL_GetMouseState(&x,&y);
+
+        SDL_Rect lrect;
+        lrect.x = x-7;
+        lrect.y = y-7;
+        lrect.w = 15;
+        lrect.h = 15;
+
+        SDL_Surface *lightgunSurface;
+        lightgunSurface = IMG_Load(cursor[config.cursor]);
+        static lightgun_af = 0;
+        SDL_Rect srect;
+        srect.y = 0;
+        srect.w = 15;
+        srect.h = 15;
+        if (lightgun_af >= 10)
+        {
+        srect.x = 0;
+        SDL_BlitSurface(lightgunSurface, &srect, sdl_video.surf_screen, &lrect);
+        } else
+        {
+        if (config.cursor != 0)
+            srect.x = 15;
+        else 
+            srect.x = 0;
+        SDL_BlitSurface(lightgunSurface, &srect, sdl_video.surf_screen, &lrect);
+        }
+        lightgun_af++;
+        if (lightgun_af == 20) lightgun_af = 0;
+	SDL_FreeSurface(lightgunSurface);
+    } //show_lightgun
 #endif
 
     SDL_Flip(sdl_video.surf_screen);
@@ -844,13 +908,14 @@ static int gcw0menu(void)
         "Load state 8",
         "Load state 9",
     };
-    const char *gcw0menu_misc[5]=
+    const char *gcw0menu_misc[6]=
     {
         "Back to main menu",
         "Resume on Save/Load",
         "A-stick",
         "Lock-on",
         "FM sound (SMS)",
+        "Lightgun Cursor",
     };
 
     const char *lock_on_desc[4]=
@@ -1206,7 +1271,7 @@ static int gcw0menu(void)
         else if (menustate == MISC_OPTIONS)
         {
             ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
-            for(i=0; i<5; i++)
+            for(i=0; i<6; i++)
             {
                 SDL_Rect destination;
                 destination.x = 80;
@@ -1247,6 +1312,24 @@ static int gcw0menu(void)
             textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.ym2413], selected_text_color);
     	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
             SDL_FreeSurface(textSurface);
+//          Lightgun Cursor
+            destination.y = 70+(15*5);
+            SDL_Surface *lightgunSurface;
+            lightgunSurface = IMG_Load(cursor[config.cursor]);
+            static lightgun_af_demo = 0;
+            SDL_Rect srect;
+            srect.x = 0;
+            srect.y = 0;
+            srect.w = 15;
+            srect.h = 15;
+            if (lightgun_af_demo >= 10 && config.cursor != 0)
+            {
+                srect.x = 15;
+            }
+            lightgun_af_demo++;
+            if (lightgun_af_demo == 20) lightgun_af_demo = 0;
+            SDL_BlitSurface(lightgunSurface, &srect, menuSurface, &destination);
+            SDL_FreeSurface(lightgunSurface);
 
             TTF_CloseFont (ttffont);
 
@@ -1312,7 +1395,7 @@ static int gcw0menu(void)
                 else if (selectedoption > 49 && selectedoption < 60) //misc menu
     	        {
                     selectedoption++;
-                    if (selectedoption == 55)    selectedoption = 50;
+                    if (selectedoption == 56)    selectedoption = 50;
                 } 
                 else  //main menu
                 {
@@ -1347,7 +1430,7 @@ static int gcw0menu(void)
                 else if (selectedoption > 49 && selectedoption < 60) //misc menu
                 {
                     selectedoption--;
-                    if (selectedoption == 49)    selectedoption = 54;
+                    if (selectedoption == 49)    selectedoption = 55;
                 }
                 else
     	        { //main menu
@@ -1605,6 +1688,14 @@ static int gcw0menu(void)
                     config_save();
                     SDL_Delay(130);
                 }
+                else if (selectedoption == 55)
+                {
+                    config.cursor++;
+                    if (config.cursor == 4)
+                        config.cursor = 0;
+                    config_save();
+                    SDL_Delay(130);
+                }
 
             }
             else if(menustate == REMAP_OPTIONS)
@@ -1756,17 +1847,35 @@ int sdl_input_update(void)
     {
     case DEVICE_LIGHTGUN:
     {
-//gcw0 testing
-  SDL_ShowCursor(1); 
-//draw mouse cursor
-//blit image to mouse coordinates
 
+#ifdef GCWZERO
+        show_lightgun = 1;
+        /* get mouse coordinates (absolute values) */
+        int x,y;
+        int state = SDL_GetMouseState(&x,&y);
+ 
+        if (config.gcw0_fullscreen)
+        {
+            input.analog[joynum][0] =  x;
+            input.analog[joynum][1] =  y;
+        } else
+        {
+            input.analog[joynum][0] =  x - (VIDEO_WIDTH-bitmap.viewport.w)/2;
+            input.analog[joynum][1] =  y - (VIDEO_HEIGHT-bitmap.viewport.h)/2;
+        } 
+        if (config.smsmaskleftbar) x += 8;
+        /* TRIGGER, B, C (Menacer only), START (Menacer & Justifier only) */
+        if(state & SDL_BUTTON_LMASK) input.pad[joynum] |= INPUT_A;
+        if(state & SDL_BUTTON_RMASK) input.pad[joynum] |= INPUT_B;
+        if(state & SDL_BUTTON_MMASK) input.pad[joynum] |= INPUT_C;
+        if(keystate[SDLK_f])  input.pad[joynum] |= INPUT_START;
+#else
         /* get mouse coordinates (absolute values) */
         int x,y;
         int state = SDL_GetMouseState(&x,&y);
  
         /* X axis */
-        input.analog[joynum][0] =  x - (VIDEO_WIDTH-bitmap.viewport.w)/2;
+	        input.analog[joynum][0] =  x - (VIDEO_WIDTH-bitmap.viewport.w)/2;
  
         /* Y axis */
         input.analog[joynum][1] =  y - (VIDEO_HEIGHT-bitmap.viewport.h)/2;
@@ -1776,9 +1885,10 @@ int sdl_input_update(void)
         if(state & SDL_BUTTON_RMASK) input.pad[joynum] |= INPUT_B;
         if(state & SDL_BUTTON_MMASK) input.pad[joynum] |= INPUT_C;
         if(keystate[SDLK_f])  input.pad[joynum] |= INPUT_START;
-//gcw0        break;
+        break;
+#endif
     }
-#if 0 
+#ifndef GCWZERO
     case DEVICE_PADDLE:
     {
         /* get mouse (absolute values) */
@@ -1796,7 +1906,6 @@ int sdl_input_update(void)
  
     case DEVICE_SPORTSPAD:
     {
-    SDL_ShowCursor(1);
         /* get mouse (relative values) */
         int x,y;
         int state = SDL_GetRelativeMouseState(&x,&y);
@@ -2031,15 +2140,62 @@ int sdl_input_update(void)
         static int MoveDown  = 0;
         Sint16 x_move = 0;
         Sint16 y_move = 0;
+        static int lg_left   = 0;
+        static int lg_right  = 0;
+        static int lg_up     = 0;
+        static int lg_down   = 0;
+        SDL_Joystick* joy;
+        if(SDL_NumJoysticks() > 0)
+        {
+            joy    = SDL_JoystickOpen(0);
+            x_move = SDL_JoystickGetAxis(joy, 0);
+            y_move = SDL_JoystickGetAxis(joy, 1);
+        }
+
+//      Control lightgun with A-stick if activated
+        if (show_lightgun)
+        {
+            lg_left   = 0;
+            lg_right  = 0;
+            lg_up     = 0;
+            lg_down   = 0;
+            if (x_move < -1000 || x_move > 1000)
+            {
+                if (x_move < -1000 ) lg_left  = 1;
+                if (x_move < -20000) lg_left  = 3;
+                if (x_move >  1000 ) lg_right = 1;
+                if (x_move >  20000) lg_right = 3;
+            }
+            if (y_move < -1000 || y_move > 1000)
+            {
+                if (y_move < -1000 ) lg_up   = 1;
+                if (y_move < -20000) lg_up   = 3;
+                if (y_move >  1000 ) lg_down = 1;
+                if (y_move >  20000) lg_down = 3;
+            }
+//      Keep mouse within screen
+        int x,y;
+        int state = SDL_GetMouseState(&x,&y);
+        if (!config.gcw0_fullscreen)
+        {
+            if ((x - lg_left ) < 32 ) x = 32;
+            if ((y - lg_up   ) < 24 ) y = 24;
+            if ((x + lg_right) > 288) x = 288;
+            if ((y + lg_down ) > 216) y = 216;
+
+        } else //scaling on
+        {
+            if ((x - lg_left) < 0) x = 0;
+            if ((y - lg_up  ) < 0) y = 0;
+            if ((x + lg_right) > 288) x = 288;
+            if ((y + lg_down ) > 216) y = 216;
+        }
+        SDL_WarpMouse((x+lg_right-lg_left),(y+lg_down-lg_up));
+
+        } else
+//      otherwise it's just mirroring the D-pad controls
         if (config.a_stick)
         {
-            SDL_Joystick* joy;
-            if(SDL_NumJoysticks() > 0)
-            {
-                joy    = SDL_JoystickOpen(0);
-                x_move = SDL_JoystickGetAxis(joy, 0);
-                y_move = SDL_JoystickGetAxis(joy, 1);
-            }
             MoveLeft  = 0;
             MoveRight = 0;
             MoveUp    = 0;
