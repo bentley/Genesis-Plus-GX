@@ -74,4 +74,7 @@ Sonic & Knuckles:  "/usr/local/home/.genplus/lock-on/sk.bin" and /usr/local/home
 
 After changing the lock-on option, you must reload the game rom.
 
-2015/03/12
+Lightgun Cursor
+Change the lightgun cursor. The cursor is only visible in compatible lightgun games (currently only Master System titles).
+
+2015/03/15
