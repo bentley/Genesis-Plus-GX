@@ -844,12 +844,13 @@ static int gcw0menu(void)
         "Load state 8",
         "Load state 9",
     };
-    const char *gcw0menu_misc[4]=
+    const char *gcw0menu_misc[5]=
     {
         "Back to main menu",
         "Resume on Save/Load",
         "A-stick",
         "Lock-on",
+        "FM sound (SMS)",
     };
 
     const char *lock_on_desc[4]=
@@ -1205,7 +1206,7 @@ static int gcw0menu(void)
         else if (menustate == MISC_OPTIONS)
         {
             ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
-            for(i=0; i<4; i++)
+            for(i=0; i<5; i++)
             {
                 SDL_Rect destination;
                 destination.x = 80;
@@ -1238,6 +1239,12 @@ static int gcw0menu(void)
             destination.x = 142;
             destination.y = 70+(15*3);
             textSurface = TTF_RenderText_Solid(ttffont, lock_on_desc[config.lock_on], selected_text_color);
+    	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+            SDL_FreeSurface(textSurface);
+//          FM sound(SMS)
+            destination.x = 220;
+            destination.y = 70+(15*4);
+            textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.ym2413], selected_text_color);
     	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
             SDL_FreeSurface(textSurface);
 
@@ -1305,7 +1312,7 @@ static int gcw0menu(void)
                 else if (selectedoption > 49 && selectedoption < 60) //misc menu
     	        {
                     selectedoption++;
-                    if (selectedoption == 54)    selectedoption = 50;
+                    if (selectedoption == 55)    selectedoption = 50;
                 } 
                 else  //main menu
                 {
@@ -1340,7 +1347,7 @@ static int gcw0menu(void)
                 else if (selectedoption > 49 && selectedoption < 60) //misc menu
                 {
                     selectedoption--;
-                    if (selectedoption == 49)    selectedoption = 53;
+                    if (selectedoption == 49)    selectedoption = 54;
                 }
                 else
     	        { //main menu
@@ -1592,6 +1599,12 @@ static int gcw0menu(void)
                     config_save();
                     SDL_Delay(130);
                 }
+                else if (selectedoption == 54)
+                {
+                    config.ym2413 = !config.ym2413;
+                    config_save();
+                    SDL_Delay(130);
+                }
 
             }
             else if(menustate == REMAP_OPTIONS)
@@ -1743,6 +1756,11 @@ int sdl_input_update(void)
     {
     case DEVICE_LIGHTGUN:
     {
+//gcw0 testing
+  SDL_ShowCursor(1); 
+//draw mouse cursor
+//blit image to mouse coordinates
+
         /* get mouse coordinates (absolute values) */
         int x,y;
         int state = SDL_GetMouseState(&x,&y);
@@ -1758,9 +1776,9 @@ int sdl_input_update(void)
         if(state & SDL_BUTTON_RMASK) input.pad[joynum] |= INPUT_B;
         if(state & SDL_BUTTON_MMASK) input.pad[joynum] |= INPUT_C;
         if(keystate[SDLK_f])  input.pad[joynum] |= INPUT_START;
-        break;
+//gcw0        break;
     }
- 
+#if 0 
     case DEVICE_PADDLE:
     {
         /* get mouse (absolute values) */
@@ -1778,6 +1796,7 @@ int sdl_input_update(void)
  
     case DEVICE_SPORTSPAD:
     {
+    SDL_ShowCursor(1);
         /* get mouse (relative values) */
         int x,y;
         int state = SDL_GetRelativeMouseState(&x,&y);
@@ -1795,6 +1814,7 @@ int sdl_input_update(void)
  
     case DEVICE_MOUSE:
     {
+    SDL_ShowCursor(1);
         /* get mouse (relative values) */
         int x,y;
         int state = SDL_GetRelativeMouseState(&x,&y);
@@ -1915,7 +1935,7 @@ int sdl_input_update(void)
         if(keystate[SDLK_j])  input.pad[joynum] |= INPUT_ACTIVATOR_8L;
         if(keystate[SDLK_k])  input.pad[joynum] |= INPUT_ACTIVATOR_8U;
     }
-
+#endif
     default:
     {
 #ifdef GCWZERO
