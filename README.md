@@ -27,5 +27,4 @@ Latest official Gamecube / Wii standalone port (screenshots below) is available 
 ![CtrlMenu.png](https://bitbucket.org/repo/7AjE6M/images/2283464354-CtrlMenu.png)
 
 ----
-You can also test the lastest compiled builds for some platforms by downloading them from [here](https://bitbucket.org/eke/genesis-plus-gx/src/710da247684c89ff3a3ee7f9d6785a96a01f0117/builds/).
-
+You can also test latest compiled builds for some platforms by downloading them from [here](https://bitbucket.org/eke/genesis-plus-gx/src/710da247684c89ff3a3ee7f9d6785a96a01f0117/builds/).
