@@ -908,13 +908,14 @@ static int gcw0menu(void)
         "Load state 8",
         "Load state 9",
     };
-    const char *gcw0menu_misc[6]=
+    const char *gcw0menu_misc[7]=
     {
         "Back to main menu",
         "Resume on Save/Load",
         "A-stick",
         "Lock-on",
         "FM sound (SMS)",
+        "Lightgun speed",
         "Lightgun Cursor",
     };
 
@@ -1271,7 +1272,7 @@ static int gcw0menu(void)
         else if (menustate == MISC_OPTIONS)
         {
             ttffont = TTF_OpenFont("./ProggyTiny.ttf", 16);
-            for(i=0; i<6; i++)
+            for(i=0; i<7; i++)
             {
                 SDL_Rect destination;
                 destination.x = 80;
@@ -1312,8 +1313,14 @@ static int gcw0menu(void)
             textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_onofflist[config.ym2413], selected_text_color);
     	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
             SDL_FreeSurface(textSurface);
-//          Lightgun Cursor
+//          Lightgun speed
+            destination.x = 220;
             destination.y = 70+(15*5);
+            textSurface = TTF_RenderText_Solid(ttffont, gcw0menu_numericlist[config.lightgun_speed], selected_text_color);
+    	    SDL_BlitSurface(textSurface, NULL, menuSurface, &destination);
+            SDL_FreeSurface(textSurface);
+//          Lightgun Cursor
+            destination.y = 70+(15*6);
             SDL_Surface *lightgunSurface;
             lightgunSurface = IMG_Load(cursor[config.cursor]);
             static lightgun_af_demo = 0;
@@ -1395,7 +1402,7 @@ static int gcw0menu(void)
                 else if (selectedoption > 49 && selectedoption < 60) //misc menu
     	        {
                     selectedoption++;
-                    if (selectedoption == 56)    selectedoption = 50;
+                    if (selectedoption == 57)    selectedoption = 50;
                 } 
                 else  //main menu
                 {
@@ -1430,7 +1437,7 @@ static int gcw0menu(void)
                 else if (selectedoption > 49 && selectedoption < 60) //misc menu
                 {
                     selectedoption--;
-                    if (selectedoption == 49)    selectedoption = 55;
+                    if (selectedoption == 49)    selectedoption = 56;
                 }
                 else
     	        { //main menu
@@ -1689,6 +1696,14 @@ static int gcw0menu(void)
                     SDL_Delay(130);
                 }
                 else if (selectedoption == 55)
+                {
+                    config.lightgun_speed++;
+                    if (config.lightgun_speed == 4)
+                        config.lightgun_speed = 1;
+                    config_save();
+                    SDL_Delay(130);
+                }
+                else if (selectedoption == 56)
                 {
                     config.cursor++;
                     if (config.cursor == 4)
@@ -2190,7 +2205,8 @@ int sdl_input_update(void)
             if ((x + lg_right) > 288) x = 288;
             if ((y + lg_down ) > 216) y = 216;
         }
-        SDL_WarpMouse((x+lg_right-lg_left),(y+lg_down-lg_up));
+        SDL_WarpMouse( ( x+ ( ( lg_right - lg_left ) * config.lightgun_speed ) ) ,
+                       ( y+ ( ( lg_down  - lg_up    ) * config.lightgun_speed ) ) );
 
         } else
 //      otherwise it's just mirroring the D-pad controls
