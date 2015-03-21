@@ -735,7 +735,6 @@ static int sdl_control_update(SDLKey keystate)
         bitmap.viewport.changed = 3;
         break;
     }
- 
     case SDLK_F12:
     {
         joynum = (joynum + 1) % MAX_DEVICES;
@@ -1855,9 +1854,12 @@ static int gcw0menu(void)
 int sdl_input_update(void)
 {
     uint8 *keystate = SDL_GetKeyState(NULL);
- 
+
     /* reset input */
     input.pad[joynum] = 0;
+    if(show_lightgun)
+        input.pad[4] = 0; //player2:
+
     switch (input.dev[joynum])
     {
     case DEVICE_LIGHTGUN:
@@ -2063,14 +2065,22 @@ int sdl_input_update(void)
     default:
     {
 #ifdef GCWZERO
-        if(keystate[config.buttons[A]])    	input.pad[joynum] |= INPUT_A;
-        if(keystate[config.buttons[B]])      	input.pad[joynum] |= INPUT_B;
-        if(keystate[config.buttons[C]])     	input.pad[joynum] |= INPUT_C;
-        if(keystate[config.buttons[START]])  	input.pad[joynum] |= INPUT_START;
-        if(keystate[config.buttons[X]])      	input.pad[joynum] |= INPUT_X;
-        if(keystate[config.buttons[Y]])     	input.pad[joynum] |= INPUT_Y;
-        if(keystate[config.buttons[Z]])         input.pad[joynum] |= INPUT_Z;
-        if(keystate[config.buttons[MODE]])  	input.pad[joynum] |= INPUT_MODE;
+        if(keystate[config.buttons[A]])     input.pad[joynum] |= INPUT_A;
+        if(keystate[config.buttons[B]])     input.pad[joynum] |= INPUT_B;
+        if(keystate[config.buttons[C]])     input.pad[joynum] |= INPUT_C;
+        if(keystate[config.buttons[START]]) input.pad[joynum] |= INPUT_START;
+        if (show_lightgun)
+        {
+            if(keystate[config.buttons[X]]) input.pad[4]    |= INPUT_A;
+            if(keystate[config.buttons[Y]]) input.pad[4]    |= INPUT_B;
+            if(keystate[config.buttons[Z]]) input.pad[4]    |= INPUT_C;
+        } else
+        {
+            if(keystate[config.buttons[X]]) input.pad[joynum] |= INPUT_X;
+            if(keystate[config.buttons[Y]]) input.pad[joynum] |= INPUT_Y;
+            if(keystate[config.buttons[Z]]) input.pad[joynum] |= INPUT_Z;
+        }
+        if(keystate[config.buttons[MODE]])  input.pad[joynum] |= INPUT_MODE;
         if (keystate[SDLK_ESCAPE] && keystate[SDLK_RETURN])
         {
             gotomenu=1;
@@ -2227,10 +2237,28 @@ int sdl_input_update(void)
                 if (y_move >  1000) MoveDown = 1;
             }
         }
+if(show_lightgun) //D-pad controls player 2
+{
+        if(MoveUp              == 1)  input.pad[joynum] |= INPUT_UP;
+        if(MoveDown            == 1)  input.pad[joynum] |= INPUT_DOWN;
+        if(MoveLeft            == 1)  input.pad[joynum] |= INPUT_LEFT;
+        if(MoveRight           == 1)  input.pad[joynum] |= INPUT_RIGHT;
+        if(keystate[SDLK_UP]   == 1)  input.pad[4]      |= INPUT_UP;
+        if(keystate[SDLK_DOWN] == 1)  input.pad[4]      |= INPUT_DOWN;
+        if(keystate[SDLK_LEFT] == 1)  input.pad[4]      |= INPUT_LEFT;
+        if(keystate[SDLK_RIGHT]== 1)  input.pad[4]      |= INPUT_RIGHT;
+} else
+{
         if     (keystate[SDLK_UP]    || MoveUp    == 1)  input.pad[joynum] |= INPUT_UP;
         else if(keystate[SDLK_DOWN]  || MoveDown  == 1)  input.pad[joynum] |= INPUT_DOWN;
         if     (keystate[SDLK_LEFT]  || MoveLeft  == 1)  input.pad[joynum] |= INPUT_LEFT;
         else if(keystate[SDLK_RIGHT] || MoveRight == 1)  input.pad[joynum] |= INPUT_RIGHT;
+}
+//if (show_lightgun && joynum == 0)
+//{
+//joynum = 4;
+//goto player2;
+//} else joynum = 0;
 #else
         if     (keystate[SDLK_UP]   )  input.pad[joynum] |= INPUT_UP;
         else if(keystate[SDLK_DOWN] )  input.pad[joynum] |= INPUT_DOWN;
