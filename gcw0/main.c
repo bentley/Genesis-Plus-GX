@@ -1859,13 +1859,9 @@ int sdl_input_update(void)
     input.pad[joynum] = 0;
     if(show_lightgun)
         input.pad[4] = 0; //player2:
-
-    switch (input.dev[joynum])
+    switch (input.dev[4])
     {
     case DEVICE_LIGHTGUN:
-    {
-
-#ifdef GCWZERO
         show_lightgun = 1;
         /* get mouse coordinates (absolute values) */
         int x,y;
@@ -1873,19 +1869,45 @@ int sdl_input_update(void)
  
         if (config.gcw0_fullscreen)
         {
-            input.analog[joynum][0] =  x;
-            input.analog[joynum][1] =  y;
+            input.analog[4][0] =  x;
+            input.analog[4][1] =  y;
         } else
         {
-            input.analog[joynum][0] =  x - (VIDEO_WIDTH-bitmap.viewport.w)/2;
-            input.analog[joynum][1] =  y - (VIDEO_HEIGHT-bitmap.viewport.h)/2;
+            input.analog[4][0] =  x - (VIDEO_WIDTH-bitmap.viewport.w)/2;
+            input.analog[4][1] =  y - (VIDEO_HEIGHT-bitmap.viewport.h)/2;
+        } 
+        if (config.smsmaskleftbar) x += 8;
+        /* TRIGGER, B, C (Menacer only), START (Menacer & Justifier only) */
+        if(keystate[SDLK_ESCAPE])  input.pad[4] |= INPUT_START;
+    default:
+        break;
+    }
+    switch (input.dev[joynum])
+    {
+    case DEVICE_LIGHTGUN:
+    {
+
+#ifdef GCWZERO
+        show_lightgun = 2;
+        /* get mouse coordinates (absolute values) */
+        int x,y;
+        int state = SDL_GetMouseState(&x,&y);
+ 
+        if (config.gcw0_fullscreen)
+        {
+            input.analog[0][0] =  x;
+            input.analog[0][1] =  y;
+        } else
+        {
+            input.analog[0][0] =  x - (VIDEO_WIDTH-bitmap.viewport.w)/2;
+            input.analog[0][1] =  y - (VIDEO_HEIGHT-bitmap.viewport.h)/2;
         } 
         if (config.smsmaskleftbar) x += 8;
         /* TRIGGER, B, C (Menacer only), START (Menacer & Justifier only) */
         if(state & SDL_BUTTON_LMASK) input.pad[joynum] |= INPUT_A;
         if(state & SDL_BUTTON_RMASK) input.pad[joynum] |= INPUT_B;
         if(state & SDL_BUTTON_MMASK) input.pad[joynum] |= INPUT_C;
-        if(keystate[SDLK_f])  input.pad[joynum] |= INPUT_START;
+        if(keystate[SDLK_ESCAPE])  input.pad[0] |= INPUT_START;
 #else
         /* get mouse coordinates (absolute values) */
         int x,y;
@@ -2069,7 +2091,13 @@ int sdl_input_update(void)
         if(keystate[config.buttons[B]])     input.pad[joynum] |= INPUT_B;
         if(keystate[config.buttons[C]])     input.pad[joynum] |= INPUT_C;
         if(keystate[config.buttons[START]]) input.pad[joynum] |= INPUT_START;
-        if (show_lightgun)
+        if (show_lightgun == 1)
+        {
+            if(keystate[config.buttons[X]]) input.pad[4]    |= INPUT_A; //player 2
+            if(keystate[config.buttons[Y]]) input.pad[4]    |= INPUT_B; //player 2
+            if(keystate[config.buttons[Z]]) input.pad[4]    |= INPUT_C; //player 2
+        } else
+        if (show_lightgun == 2)
         {
             if(keystate[config.buttons[X]]) input.pad[4]    |= INPUT_A; //player 2
             if(keystate[config.buttons[Y]]) input.pad[4]    |= INPUT_B; //player 2
@@ -2237,7 +2265,18 @@ int sdl_input_update(void)
                 if (y_move >  1000) MoveDown = 1;
             }
         }
-if(show_lightgun) //D-pad controls player 2
+if(show_lightgun == 1) //Genesis/MD D-pad controls player 2
+{
+        if(MoveUp              == 1)  input.pad[4] |= INPUT_UP;
+        if(MoveDown            == 1)  input.pad[4] |= INPUT_DOWN;
+        if(MoveLeft            == 1)  input.pad[4] |= INPUT_LEFT;
+        if(MoveRight           == 1)  input.pad[4] |= INPUT_RIGHT;
+        if(keystate[SDLK_UP]   == 1)  input.pad[joynum]      |= INPUT_UP;
+        if(keystate[SDLK_DOWN] == 1)  input.pad[joynum]      |= INPUT_DOWN;
+        if(keystate[SDLK_LEFT] == 1)  input.pad[joynum]      |= INPUT_LEFT;
+        if(keystate[SDLK_RIGHT]== 1)  input.pad[joynum]      |= INPUT_RIGHT;
+} else
+if(show_lightgun == 2) //SMS D-pad controls player 2
 {
         if(MoveUp              == 1)  input.pad[joynum] |= INPUT_UP;
         if(MoveDown            == 1)  input.pad[joynum] |= INPUT_DOWN;

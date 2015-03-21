@@ -92,6 +92,37 @@ void input_init(void)
 
   switch (input.system[0])
   {
+#ifdef GCWZERO
+    case SYSTEM_MENACER:
+    {
+      input.dev[4] = DEVICE_LIGHTGUN;
+      player++;
+      break;
+    }
+
+    case SYSTEM_JUSTIFIER:
+    {
+      for (i=4; i<6; i++)
+      {
+        if (player < MAX_INPUTS)
+        {
+#ifdef GCWZERO
+      input.dev[4] = DEVICE_LIGHTGUN;
+#else
+          input.dev[i] = DEVICE_LIGHTGUN;
+#endif
+          player++;
+        }
+      }
+      break;
+    }
+    case SYSTEM_LIGHTPHASER:
+    {
+      input.dev[0] = DEVICE_LIGHTGUN;
+      player++;
+      break;
+    }
+#endif
     case SYSTEM_GAMEPAD:
     {
       /* 2-buttons, 3-buttons or 6-buttons control pad */
@@ -184,13 +215,6 @@ void input_init(void)
       break;
     }
 
-    case SYSTEM_LIGHTPHASER:
-    {
-      input.dev[0] = DEVICE_LIGHTGUN;
-      player++;
-      break;
-    }
-
     case SYSTEM_PADDLE:
     {
       input.dev[0] = DEVICE_PADDLE;
@@ -268,7 +292,11 @@ void input_init(void)
       {
         if (player < MAX_INPUTS)
         {
+#ifdef GCWZERO
+      input.dev[4] = DEVICE_LIGHTGUN;
+#else
           input.dev[i] = DEVICE_LIGHTGUN;
+#endif
           player++;
         }
       }
