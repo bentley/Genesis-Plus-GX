@@ -2071,9 +2071,9 @@ int sdl_input_update(void)
         if(keystate[config.buttons[START]]) input.pad[joynum] |= INPUT_START;
         if (show_lightgun)
         {
-            if(keystate[config.buttons[X]]) input.pad[4]    |= INPUT_A;
-            if(keystate[config.buttons[Y]]) input.pad[4]    |= INPUT_B;
-            if(keystate[config.buttons[Z]]) input.pad[4]    |= INPUT_C;
+            if(keystate[config.buttons[X]]) input.pad[4]    |= INPUT_A; //player 2
+            if(keystate[config.buttons[Y]]) input.pad[4]    |= INPUT_B; //player 2
+            if(keystate[config.buttons[Z]]) input.pad[4]    |= INPUT_C; //player 2
         } else
         {
             if(keystate[config.buttons[X]]) input.pad[joynum] |= INPUT_X;
@@ -2254,11 +2254,6 @@ if(show_lightgun) //D-pad controls player 2
         if     (keystate[SDLK_LEFT]  || MoveLeft  == 1)  input.pad[joynum] |= INPUT_LEFT;
         else if(keystate[SDLK_RIGHT] || MoveRight == 1)  input.pad[joynum] |= INPUT_RIGHT;
 }
-//if (show_lightgun && joynum == 0)
-//{
-//joynum = 4;
-//goto player2;
-//} else joynum = 0;
 #else
         if     (keystate[SDLK_UP]   )  input.pad[joynum] |= INPUT_UP;
         else if(keystate[SDLK_DOWN] )  input.pad[joynum] |= INPUT_DOWN;
