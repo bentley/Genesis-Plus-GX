@@ -106,23 +106,19 @@ void input_init(void)
       {
         if (player < MAX_INPUTS)
         {
-#ifdef GCWZERO
-      input.dev[4] = DEVICE_LIGHTGUN;
-#else
-          input.dev[i] = DEVICE_LIGHTGUN;
-#endif
+          input.dev[4] = DEVICE_LIGHTGUN;
           player++;
         }
       }
       break;
     }
+#endif
     case SYSTEM_LIGHTPHASER:
     {
       input.dev[0] = DEVICE_LIGHTGUN;
       player++;
       break;
     }
-#endif
     case SYSTEM_GAMEPAD:
     {
       /* 2-buttons, 3-buttons or 6-buttons control pad */
@@ -293,7 +289,7 @@ void input_init(void)
         if (player < MAX_INPUTS)
         {
 #ifdef GCWZERO
-      input.dev[4] = DEVICE_LIGHTGUN;
+          input.dev[4] = DEVICE_LIGHTGUN;
 #else
           input.dev[i] = DEVICE_LIGHTGUN;
 #endif
