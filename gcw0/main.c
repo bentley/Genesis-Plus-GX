@@ -764,13 +764,14 @@ static void shutdown()
 {
     FILE *fp;
  
-    //TODO: verify SCD backup room dir and files
     if (system_hw == SYSTEM_MCD)
     {
         /* save internal backup RAM (if formatted) */
+        char brm_file[256];
         if (!memcmp(scd.bram + 0x2000 - 0x20, brm_format + 0x20, 0x20))
         {
-            fp = fopen("./scd.brm", "wb");
+			sprintf(brm_file,"%s/", get_save_directory(), "scd.brm");
+			fp = fopen(brm_file, "wb");
             if (fp!=NULL)
             {
                 fwrite(scd.bram, 0x2000, 1, fp);
@@ -783,7 +784,8 @@ static void shutdown()
         {
             if (!memcmp(scd.cartridge.area + scd.cartridge.mask + 1 - 0x20, brm_format + 0x20, 0x20))
             {
-                fp = fopen("./cart.brm", "wb");
+				sprintf(brm_file,"%s/", get_save_directory(), "cart.brm");
+				fp = fopen(brm_file, "wb");
                 if (fp!=NULL)
                 {
                     fwrite(scd.cartridge.area, scd.cartridge.mask + 1, 1, fp);
@@ -2406,10 +2408,12 @@ int main (int argc, char **argv)
     system_init();
  
     /* Mega CD specific */
+    char brm_file[256];
     if (system_hw == SYSTEM_MCD)
     {
         /* load internal backup RAM */
-        fp = fopen("./scd.brm", "rb");
+		sprintf(brm_file,"%s/", get_save_directory(), "scd.brm");
+		fp = fopen(brm_file, "rb");
         if (fp!=NULL)
         {
             fread(scd.bram, 0x2000, 1, fp);
@@ -2433,7 +2437,8 @@ int main (int argc, char **argv)
         /* load cartridge backup RAM */
         if (scd.cartridge.id)
         {
-            fp = fopen("./cart.brm", "rb");
+			sprintf(brm_file,"%s/", get_save_directory(), "cart.brm");
+			fp = fopen(brm_file, "rb");
             if (fp!=NULL)
             {
                 fread(scd.cartridge.area, scd.cartridge.mask + 1, 1, fp);
