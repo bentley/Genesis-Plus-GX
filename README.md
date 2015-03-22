@@ -82,5 +82,8 @@ Rename each binary file as follows:
 
 _*After changing the lock-on option, you must reload the game rom._
 
+###Lightgun Cursor
+Change the lightgun cursor. The cursor is only visible in compatible lightgun games (currently only Master System titles).
+
 ##LATEST BUILDS
 Latest GCW-Zero builds are available for download from https://bitbucket.org/shin_nil/genesis-plus-gx-gcw0/downloads
