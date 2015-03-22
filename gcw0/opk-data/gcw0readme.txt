@@ -41,6 +41,9 @@ SELECT + START: Menu
 SELECT + L: Quicksave to Savestate 1
 SELECT + R: Quickload savestate 1
 
+In lightgun games for the Master system and Genesis/MD A-stick controls the cursor and A/B/C work as normal. Player 2 controls are mapped to the D-pad and X/Y/Z buttons.
+This allows (in theory at least!) two player games. It also allows you to select which control method you prefer. Some games (eg Spacegun) require two controllers.
+
 CONFIGURATION OPTIONS (Default setting)
 
 Scaling (On)
@@ -74,7 +77,78 @@ Sonic & Knuckles:  "/usr/local/home/.genplus/lock-on/sk.bin" and /usr/local/home
 
 After changing the lock-on option, you must reload the game rom.
 
+FM sound (SMS) (On)
+Select whether to use enhanced sound on a few Master System titles. A list of compatible titles is at the foot of this readme.
+
+Lightgun Speed (1)
+Higher values will speed up the lightgun cursor for player 1.
+
 Lightgun Cursor
 Change the lightgun cursor. The cursor is only visible in compatible lightgun games (currently only Master System titles).
 
-2015/03/15
+FM (enhanced music) Compatible Master system titles (taken from http://segaretro.org/FM_Sound_Unit)
+
+(Note in most cases, only the Japanese variants are compatible)
+After Burner
+Alex Kidd BMX Trial
+Alex Kidd: The Lost Stars
+Alien Syndrome
+Aztec Adventure
+Blade Eagle 3-D
+Bomber Raid
+Captain Silver
+Cyborg Hunter
+Double Dragon
+Fantasy Zone II
+Fantasy Zone: The Maze
+Galactic Protector
+Global Defense
+Golvellius - Valley of Doom
+Great Golf
+Hoshi Wo Sagashite...
+Kenseiden
+Lord of The Sword
+Maze Hunter 3-D
+Megumi Rescue
+Miracle Warriors - Seal of The Dark Lord
+Nekkyuu Koushien
+OutRun
+Parlour Games
+Penguin Land
+Phantasy Star
+Power Strike
+R-Type
+Shinobi
+Solomon no Kagi - Oujo Rihita no Namida
+Space Harrier 3-D
+SpellCaster
+Super Racing
+Tensai Bakabon
+Thunder Blade
+Wonder Boy in Monster Land
+Ys: The Vanished Omens
+Zaxxon 3-D
+Zillion II: The Tri Formation
+
+The following games have FM soundtracks but were not released in Japan:
+
+Altered Beast
+California Games
+Casino Games
+Cloud Master
+Galaxy Force
+Golfamania
+OutRun 3-D
+Poseidon Wars 3-D
+Rampage
+Rastan
+Rescue Mission
+Scramble Spirits
+Shanghai
+Tennis Ace
+Time Soldiers
+Ultima IV
+Vigilante
+Wonder Boy III: The Dragon's Trap
+
+2015/03/22
