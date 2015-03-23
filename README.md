@@ -82,8 +82,14 @@ Rename each binary file as follows:
 
 _*After changing the lock-on option, you must reload the game rom._
 
+###FM sound (SMS) (On)
+Select whether to use enhanced sound on a few Master System titles. A list of compatible titles is at the foot of this readme.
+
+###Lightgun Speed (1)
+Higher values will speed up the lightgun cursor for player 1.
+
 ###Lightgun Cursor
-Change the lightgun cursor. The cursor is only visible in compatible lightgun games (currently only Master System titles).
+Change the lightgun cursor. The cursor is only visible in compatible lightgun games.
 
 ##LATEST BUILDS
 Latest GCW-Zero builds are available for download from https://bitbucket.org/shin_nil/genesis-plus-gx-gcw0/downloads
