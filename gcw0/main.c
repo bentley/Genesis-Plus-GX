@@ -2566,8 +2566,9 @@ int main (int argc, char **argv)
 
         if(!turbo_mode && sdl_sync.sem_sync && sdl_video.frames_rendered % 3 == 0)
         {
-if (!config.gcw0_frameskip || (config.gcw0_frameskip && (system_hw != SYSTEM_MCD))) //we really only need this for fmv sequences
-            SDL_SemWait(sdl_sync.sem_sync);
+            if (!config.gcw0_frameskip || (config.gcw0_frameskip && (system_hw != SYSTEM_MCD))) //we really only need this for fmv sequences
+                if(!gotomenu)
+                    SDL_SemWait(sdl_sync.sem_sync);
 #ifdef GCWZERO
         }
         else
