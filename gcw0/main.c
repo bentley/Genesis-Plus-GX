@@ -15,12 +15,15 @@
 #ifdef GCWZERO
 #include <SDL_ttf.h>
 #include <SDL_image.h>
+#include <time.h>
 
 static int do_once = 1;
 static int gcw0_w = 320;
 static int gcw0_h = 240;
 static int gotomenu;
 static int show_lightgun;
+time_t current_time;
+
 const char *cursor[4]=
 {
     "./CLASSIC_01_RED.png", //doesn't flash (for epileptics it's default)
@@ -449,6 +452,8 @@ static int test;
         {
             if (config.smsmaskleftbar)
             {
+                if(system_hw == SYSTEM_SMS2)
+                {
                 SDL_Rect srect;
                 srect.x = 0;
                 srect.y = 0;
@@ -457,6 +462,7 @@ static int test;
                 SDL_FillRect(sdl_video.surf_screen, &srect, SDL_MapRGB(sdl_video.surf_screen->format, 0, 0, 0));
                 srect.x = 252;
                 SDL_FillRect(sdl_video.surf_screen, &srect, SDL_MapRGB(sdl_video.surf_screen->format, 0, 0, 0));
+                }
             }
         }
         /* get mouse coordinates (absolute values) */
@@ -476,21 +482,28 @@ static int test;
         srect.y = 0;
         srect.w = 15;
         srect.h = 15;
+
+        //only show cursor if movement occurred within 3 seconds.
+        time_t current_time2;
+        current_time2 = time(NULL);
+
         if (lightgun_af >= 10)
         {
-        srect.x = 0;
-        SDL_BlitSurface(lightgunSurface, &srect, sdl_video.surf_screen, &lrect);
+            srect.x = 0;
+            if((current_time2 - current_time) < 3)
+                SDL_BlitSurface(lightgunSurface, &srect, sdl_video.surf_screen, &lrect);
         } else
         {
-        if (config.cursor != 0)
-            srect.x = 15;
-        else 
-            srect.x = 0;
-        SDL_BlitSurface(lightgunSurface, &srect, sdl_video.surf_screen, &lrect);
+            if (config.cursor != 0)
+                srect.x = 15;
+            else 
+                srect.x = 0;
+            if((current_time2 - current_time) < 3)
+                SDL_BlitSurface(lightgunSurface, &srect, sdl_video.surf_screen, &lrect);
         }
         lightgun_af++;
         if (lightgun_af == 20) lightgun_af = 0;
-	SDL_FreeSurface(lightgunSurface);
+        SDL_FreeSurface(lightgunSurface);
     } //show_lightgun
 #endif
 
@@ -2214,12 +2227,14 @@ int sdl_input_update(void)
             lg_right  = 0;
             lg_up     = 0;
             lg_down   = 0;
+
             if (x_move < -1000 || x_move > 1000)
             {
                 if (x_move < -1000 ) lg_left  = 1;
                 if (x_move < -20000) lg_left  = 3;
                 if (x_move >  1000 ) lg_right = 1;
                 if (x_move >  20000) lg_right = 3;
+                current_time = time(NULL); //cursor disappears after 3 seconds...
             }
             if (y_move < -1000 || y_move > 1000)
             {
@@ -2227,23 +2242,32 @@ int sdl_input_update(void)
                 if (y_move < -20000) lg_up   = 3;
                 if (y_move >  1000 ) lg_down = 1;
                 if (y_move >  20000) lg_down = 3;
+                current_time = time(NULL);
             }
-//      Keep mouse within screen
+//      Keep mouse within screen, wrap around!
         int x,y;
         int state = SDL_GetMouseState(&x,&y);
         if (!config.gcw0_fullscreen)
         {
-            if ((x - lg_left ) < 32 ) x = 32;
-            if ((y - lg_up   ) < 24 ) y = 24;
-            if ((x + lg_right) > 288) x = 288;
-            if ((y + lg_down ) > 216) y = 216;
+            if ((x - lg_left ) < sdl_video.drect.x ) x = VIDEO_WIDTH  - sdl_video.drect.x;
+            if ((y - lg_up   ) < sdl_video.drect.y ) y = VIDEO_HEIGHT - sdl_video.drect.y;
+//            if ((x + lg_right) > 288) x = 288;
+//            if ((y + lg_down ) > 216) y = 216;
+//            if ((x + lg_right) > 320) x = 320;
+//            if ((y + lg_down ) > 240) y = 240;
+            if ((x + lg_right) > VIDEO_WIDTH  - sdl_video.drect.x) x = sdl_video.drect.x;
+            if ((y + lg_down ) > VIDEO_HEIGHT - sdl_video.drect.y) y = sdl_video.drect.y;
+
+//        sdl_video.drect.x = (VIDEO_WIDTH  - sdl_video.drect.w) / 2;
+  //      sdl_video.drect.y = (VIDEO_HEIGHT - sdl_video.drect.h) / 2;
+
 
         } else //scaling on
         {
-            if ((x - lg_left) < 0) x = 0;
-            if ((y - lg_up  ) < 0) y = 0;
-            if ((x + lg_right) > 288) x = 288;
-            if ((y + lg_down ) > 216) y = 216;
+            if ((x - lg_left) < 0) x = gcw0_w;
+            if ((y - lg_up  ) < 0) y = gcw0_h;
+            if ((x + lg_right) > gcw0_w) x = 0;
+            if ((y + lg_down ) > gcw0_h) y = 0;
         }
         SDL_WarpMouse( ( x+ ( ( lg_right - lg_left ) * config.lightgun_speed ) ) ,
                        ( y+ ( ( lg_down  - lg_up    ) * config.lightgun_speed ) ) );
