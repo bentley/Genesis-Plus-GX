@@ -838,7 +838,7 @@ static int gcw0menu(void)
 
     /* display menu */
 //  change video mode
-    sdl_video.surf_screen  = SDL_SetVideoMode(320,240, 16, SDL_HWSURFACE |
+    sdl_video.surf_screen  = SDL_SetVideoMode(320,240, 32, SDL_HWSURFACE |
 #ifdef SDL_TRIPLEBUF
        SDL_TRIPLEBUF);
 #else
