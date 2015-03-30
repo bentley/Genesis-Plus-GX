@@ -41,7 +41,11 @@
 #include "blip_buf.h"
 
 #ifdef USE_LIBTREMOR
+#ifdef GCWZERO
+#include <vorbis/vorbisfile.h>
+#else
 #include "tremor/ivorbisfile.h"
+#endif
 #endif
 
 #define cdd scd.cdd_hw

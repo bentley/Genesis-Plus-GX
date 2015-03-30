@@ -38,6 +38,11 @@
 #include "shared.h"
 
 #ifdef USE_LIBTREMOR
+#ifdef GCWZERO
+#include <vorbis/vorbisfile.h>
+#else
+#include "tremor/ivorbisfile.h"
+#endif
 #define SUPPORTED_EXT 20
 #else
 #define SUPPORTED_EXT 10
@@ -744,7 +749,11 @@ int cdd_load(char *filename, char *header)
 
         /* auto-detect PAUSE within audio files */
         ov_pcm_seek(&cdd.toc.tracks[cdd.toc.last].vf, 100 * 588);
+#ifdef GCWZERO
+        ov_read(&cdd.toc.tracks[cdd.toc.last].vf, (char *)head, 32, 0, 2, 1, 0);
+#else
         ov_read(&cdd.toc.tracks[cdd.toc.last].vf, (char *)head, 32, 0);
+#endif
         ov_pcm_seek(&cdd.toc.tracks[cdd.toc.last].vf, 0);
         if (*(int32 *)head == 0)
         {
@@ -970,7 +979,11 @@ void cdd_read_audio(unsigned int samples)
       samples = samples * 4;
       while (done < samples)
       {
+#ifdef GCWZERO
+        len = ov_read(&cdd.toc.tracks[cdd.index].vf, (char *)(cdc.ram + done), samples - done, 0, 2, 1, 0);
+#else
         len = ov_read(&cdd.toc.tracks[cdd.index].vf, (char *)(cdc.ram + done), samples - done, 0);
+#endif
         if (len <= 0) 
         {
           done = samples;
@@ -1102,7 +1115,7 @@ void cdd_read_audio(unsigned int samples)
 void cdd_update(void)
 {  
 #ifdef LOG_CDD
-  error("LBA = %d (track n°%d)(latency=%d)\n", cdd.lba, cdd.index, cdd.latency);
+  error("LBA = %d (track nï¿½%d)(latency=%d)\n", cdd.lba, cdd.index, cdd.latency);
 #endif
   
   /* seeking disc */
