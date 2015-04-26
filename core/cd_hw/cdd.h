@@ -2,7 +2,7 @@
  *  Genesis Plus
  *  CD drive processor & CD-DA fader
  *
- *  Copyright (C) 2012-2014  Eke-Eke (Genesis Plus GX)
+ *  Copyright (C) 2012-2015  Eke-Eke (Genesis Plus GX)
  *
  *  Redistribution and use of this code or any derivative works are permitted
  *  provided that the following conditions are met:
@@ -40,12 +40,10 @@
 
 #include "blip_buf.h"
 
-#ifdef USE_LIBTREMOR
-#ifdef GCWZERO
+#if defined(USE_LIBVORBIS)
 #include <vorbis/vorbisfile.h>
-#else
+#elif defined(USE_LIBTREMOR)
 #include "tremor/ivorbisfile.h"
-#endif
 #endif
 
 #define cdd scd.cdd_hw
@@ -69,7 +67,7 @@
 typedef struct
 {
   FILE *fd;
-#ifdef USE_LIBTREMOR
+#if defined(USE_LIBTREMOR) || defined(USE_LIBVORBIS)
   OggVorbis_File vf;
 #endif
   int offset;
