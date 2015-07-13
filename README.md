@@ -14,7 +14,7 @@ The result is that Genesis Plus GX is now more a continuation of the original pr
 
 ----
 
-Multi-platform sourcecode (core) is available on [Bitbucket](https://bitbucket.org/eke/genesis-plus-gx/src/) and [Github](https://github.com/ekeeke/Genesis-Plus-GX) for use under a specific non-commercial [license](https://bitbucket.org/eke/genesis-plus-gx/src/master/LICENSE.txt) so that other Genesis Plus ports can benefit of it, as I really wish this emulator to become a reference for _open-source_ and _accurate_ Genesis emulation. If you ported this emulator to other platforms or need help porting it, feel free to contact me.
+Multi-platform sourcecode (core) is available on [Bitbucket](https://bitbucket.org/eke/genesis-plus-gx/src/) and [Github](https://github.com/ekeeke/Genesis-Plus-GX) for use under a specific non-commercial [license](https://bitbucket.org/eke/genesis-plus-gx/src/master/LICENSE.txt) so that other Genesis Plus ports can benefit of it, as I really wish this emulator becomes a reference for _open-source_ and _accurate_ Genesis emulation. If you ported this emulator to other platforms or need help porting it, feel free to contact me.
 
 ----
 
@@ -29,3 +29,9 @@ Latest official Gamecube / Wii standalone port (screenshots below) is available 
 ----
 
 You can also test latest compiled builds for Gamecube / Wii and Retroarch (Windows 32-bit version only) by downloading them from [here](https://bitbucket.org/eke/genesis-plus-gx/src/master/builds/).
+
+
+
+----
+
+[![btn_donate_LG.gif](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2966212) If you like this project and want to show your appreciation, Paypal donations are always welcomed.
