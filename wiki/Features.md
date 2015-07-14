@@ -12,6 +12,7 @@ The original emulation core from [Charles Mac Donald](http://cgfm2.emuviews.com/
   * accurate CDD, CDC & GFX chip emulation (Sega/Mega CD)
   * CD-DA fader emulation (Sega/Mega CD)
   * Mode 1 cartridge support (Sega/Mega CD)
+  * Audio CD & CD+G support (Sega/Mega CD)
   * highly accurate 68000 & Z80 CPU emulation
   * highly accurate VDP emulation (all rendering modes, mid-line changes, undocumented registers,…) & timings (HBLANK, DMA, FIFO, HV interrupts,…)
   * sample-accurate YM2612,YM2413, PSG, & PCM emulation (all sound chips are running at the original frequency)
@@ -20,28 +21,33 @@ The original emulation core from [Charles Mac Donald](http://cgfm2.emuviews.com/
   * basic hardware latency emulation (VDP/68k, Z80/68k)
   * full overscan area emulation (horizontal & vertical color borders)
   * optional Game Gear extended screen mode
-  * internal BOOT ROM support (Master System, Genesis / Mega Drive, Sega / Mega CD)
+  * optional Game Gear LCD ghosting filter
+  * optional Blargg's NTSC filters
+  * optional BOOT ROM support (Master System, Game Gear, Genesis / Mega Drive)
   * optional TMSS hardware emulation (Genesis / Mega Drive)
-  * support for Blargg's software NTSC filters
   * preliminary PICO emulation
   * support for raw (.bin, .gen, .md, .sms, .gg & .sg) and interleaved (.smd & .mdx) ROM files
-  * support for CUE+BIN, ISO+OGG & ISO+WAV CD image files
+  * support for various CD image file formats (CUE+BIN,  ISO+WAV & ISO+OGG)
+  * support for subcodes external files (SUB)
+
 
 ![street.gif](https://bitbucket.org/repo/7AjE6M/images/607524734-street.gif)
 
 ## Support for various peripherals ##
   * 2-buttons, 3-buttons & 6-buttons Control Pads 
   * Sega Team Player & EA 4-Way Play multitaps
+  * Master Tap 
   * Sega Mouse
   * Sega Paddle Control
   * Sega Sports Pad
-  * Terebi Oekaki
+  * Sega Graphics Board
+  * Terebi Oekaki tablet
   * Sega Light Phaser
   * Sega Menacer 
   * Konami Justifiers
   * Sega Activator
   * XE-1AP analog controller
-  * Furrtek's homemade Master System multitap 
+
 
 ![menacer.jpg](https://bitbucket.org/repo/7AjE6M/images/4221166085-menacer.jpg)
 
@@ -66,12 +72,14 @@ The original emulation core from [Charles Mac Donald](http://cgfm2.emuviews.com/
   * fully featured & optimized Graphical User Interface
   * 48 kHz stereo sound
   * optimized GX video rendering engine
-  * 100% smooth & skipping-free audio/video synchronization
+  * perfect audio/video/input synchronization
   * 50/60 Hz video output support
   * original low-resolution video modes support (interlaced & non-interlaced)
-  * high-resolution interlaced (480i/576i) & progressive (480p) video modes support
+  * high-resolution interlaced (480i/576i) & progressive (480p/576p) video modes support
   * hardware bilinear filtering
+  * configurable BIOS & Lock-on ROM files
   * configurable sound mixer (FM/PSG levels) and filtering (Low-Pass filter & 3-Band equalizer)
+  * configurable NTSC filter
   * independently configurable region mode, VDP mode & Master Clock
   * 1~4 Players support
   * automatic Backup RAM and State files loading/saving
@@ -89,9 +97,11 @@ The original emulation core from [Charles Mac Donald](http://cgfm2.emuviews.com/
 ## Wii extra features ##
   * up to 8 Players support 
   * Wii Remote, Nunchuk & Classic controllers support 
-  * Wii Remote IR support for light guns
+  * Wii Remote IR support & calibration for light guns
+  * Wii U Pro Controller support
   * USB mouse support for mouse emulation
-  * load files from USB drives (USB2 support through IOS58)
+  * USB drive support (IOS58 is required for USB2)
   * configurable hardware “Trap” filter & Gamma correction
+  * "Wiiflow" plugin compatibility
 
 ![wiimote.jpg](https://bitbucket.org/repo/7AjE6M/images/2853669073-wiimote.jpg)
