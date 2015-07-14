@@ -9,14 +9,16 @@ The original emulation core from [Charles Mac Donald](http://cgfm2.emuviews.com/
 ## Very Accurate & Full Speed Sega 8-bit / 16-bit emulation ##
   * accurate emulation of SG-1000, Mark-III, Master System (I & II), Game Gear, Genesis / Mega Drive, Sega / Mega CD hardware models (incl. backwards compatibility modes)
   * NTSC (60Hz) & PAL (50Hz) video hardware emulation
+  * highly accurate 68000 & Z80 CPU emulation & synchronization
+  * highly accurate VDP emulation (all rendering modes, mid-line changes, undocumented registers,…) & timings (HBLANK, DMA, FIFO, HV interrupts,…)
+  * sample-accurate YM2612,YM2413, SN76489, & RF5C164 PCM sound chips emulation 
+  * cycle-accurate sound chips synchronization with 68000/Z80 CPU
+  * cycle-accurate 68000 & Z80 CPU synchronization
+  * optimized Main-CPU / Sub-CPU synchronization (Sega/Mega CD)
   * accurate CDD, CDC & GFX chip emulation (Sega/Mega CD)
-  * CD-DA fader emulation (Sega/Mega CD)
+  * accurate CD-DA fader emulation (Sega/Mega CD)
   * Mode 1 cartridge support (Sega/Mega CD)
   * Audio CD & CD+G support (Sega/Mega CD)
-  * highly accurate 68000 & Z80 CPU emulation
-  * highly accurate VDP emulation (all rendering modes, mid-line changes, undocumented registers,…) & timings (HBLANK, DMA, FIFO, HV interrupts,…)
-  * sample-accurate YM2612,YM2413, PSG, & PCM emulation (all sound chips are running at the original frequency)
-  * cycle-accurate chip synchronization (68000’s/Z80/YM2612/PSG/PCM)
   * high-quality audio resampling using Blip Buffer
   * basic hardware latency emulation (VDP/68k, Z80/68k)
   * full overscan area emulation (horizontal & vertical color borders)
