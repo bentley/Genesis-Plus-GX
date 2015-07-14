@@ -13,7 +13,7 @@ This project would not have been possible without these people:
 *  [libtremor](http://www.freshports.org/audio/libtremor) by xiph.org
 
 ### additional thanks to ###
-*  [Nemesis](http://gendev.spritesmind.net/forum/viewtopic.php?t=386), for having tested and documented many of the unknown YM2612 features and helping out improving FM emulation.
+*  [Nemesis], for his tests and documentation on YM2612 & VDP chips.
 *  Tasco Deluxe for his work around the SVP chip and for his documentation of Realtec mapper used in a few unlicensed games.
 *  [Bart Trzynadlowski](http://www.trzy.org/) for his documentation of the "Super Street Fighter II" mapper and some 68000 undocumented aspects.
 *  [Jorge Cwik](http://pasti.fxatari.com/68kdocs/) for his work on some 68000 undocumented timings and instruction prefetch.
