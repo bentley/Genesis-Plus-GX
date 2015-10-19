@@ -1,11 +1,9 @@
 /***************************************************************************************
  *  Genesis Plus
- *  Virtual System emulation
+ *  8-bit & 16-bit (with & without CD) systems emulation
  *
- *  Support for "Genesis", "Genesis + CD" & "Master System" modes
- *
- *  Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Charles Mac Donald (original code)
- *  Copyright (C) 2007-2014  Eke-Eke (Genesis Plus GX)
+ *  Copyright (C) 1998-2003  Charles Mac Donald (original code)
+ *  Copyright (C) 2007-2015  Eke-Eke (Genesis Plus GX)
  *
  *  Redistribution and use of this code or any derivative works are permitted
  *  provided that the following conditions are met:
@@ -353,9 +351,6 @@ void system_frame_gen(int do_skip)
   /* line counters */
   int start, end, line;
 
-  /* Z80 interrupt flag */
-  int zirq = 1;
-
   /* reset frame cycle counter */
   mcycles_vdp = 0;
 
@@ -551,9 +546,9 @@ void system_frame_gen(int do_skip)
     /* update 6-Buttons & Lightguns */
     input_refresh();
 
-    if (zirq)
+    if (Z80.irq_state)
     {
-      /* Z80 interrupt is asserted exactly for one line */
+      /* Z80 interrupt is asserted for exactly one line */
       m68k_run(mcycles_vdp + 788);
       if (zstate == 1)
       {
@@ -566,7 +561,6 @@ void system_frame_gen(int do_skip)
 
       /* clear Z80 interrupt */
       Z80.irq_state = CLEAR_LINE;
-      zirq = 0;
     }
 
     /* run 68k & Z80 until end of line */
@@ -724,9 +718,6 @@ void system_frame_scd(int do_skip)
   /* line counters */
   int start, end, line;
 
-  /* Z80 interrupt flag */
-  int zirq = 1;
-
   /* reset frame cycle counter */
   mcycles_vdp = 0;
   scd.cycles = 0;
@@ -881,7 +872,7 @@ void system_frame_scd(int do_skip)
   /* assert Z80 interrupt */
   Z80.irq_state = ASSERT_LINE;
 
-  /* run both 68k & CD hardware */
+  /* run both 68k & CD hardware until end of line */
   scd_update(MCYCLES_PER_LINE);
 
   /* run Z80 until end of line */
@@ -919,9 +910,9 @@ void system_frame_scd(int do_skip)
     /* update 6-Buttons & Lightguns */
     input_refresh();
 
-    if (zirq)
+    if (Z80.irq_state)
     {
-      /* Z80 interrupt is asserted exactly for one line */
+      /* Z80 interrupt is asserted for exactly one line */
       m68k_run(mcycles_vdp + 788);
       if (zstate == 1)
       {
@@ -934,10 +925,9 @@ void system_frame_scd(int do_skip)
 
       /* clear Z80 interrupt */
       Z80.irq_state = CLEAR_LINE;
-      zirq = 0;
     }
 
-    /* run both 68k & CD hardware */
+    /* run both 68k & CD hardware until end of line */
     scd_update(mcycles_vdp + MCYCLES_PER_LINE);
 
     /* run Z80 until end of line */
@@ -985,7 +975,7 @@ void system_frame_scd(int do_skip)
   /* update 6-Buttons & Lightguns */
   input_refresh();
 
-  /* run both 68k & CD hardware */
+  /* run both 68k & CD hardware until end of line */
   scd_update(mcycles_vdp + MCYCLES_PER_LINE);
 
   /* run Z80 until end of line */
@@ -1045,7 +1035,7 @@ void system_frame_scd(int do_skip)
       h_counter--;
     }
 
-    /* run both 68k & CD hardware */
+    /* run both 68k & CD hardware until end of line */
     scd_update(mcycles_vdp + MCYCLES_PER_LINE);
 
     /* run Z80 until end of line */
